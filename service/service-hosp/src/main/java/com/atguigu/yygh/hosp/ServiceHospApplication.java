@@ -3,6 +3,7 @@ package com.atguigu.yygh.hosp;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.ComponentScan;
 
 /**
@@ -14,6 +15,8 @@ import org.springframework.context.annotation.ComponentScan;
 //因为 swagger 配置文件在service-util，配置注解扫描包才能扫到
 @ComponentScan(basePackages = "com.atguigu")
 @EnableDiscoveryClient
+//Feign文件在别的模块不加可能扫描不到
+@EnableFeignClients(basePackages = "com.atguigu")
 public class ServiceHospApplication {
     public static void main(String[] args) {
         SpringApplication.run(ServiceHospApplication.class, args);

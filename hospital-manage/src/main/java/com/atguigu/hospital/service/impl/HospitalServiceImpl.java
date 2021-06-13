@@ -3,6 +3,7 @@ package com.atguigu.hospital.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.atguigu.hospital.mapper.OrderInfoMapper;
 import com.atguigu.hospital.mapper.ScheduleMapper;
+
 import com.atguigu.hospital.model.OrderInfo;
 import com.atguigu.hospital.model.Patient;
 import com.atguigu.hospital.model.Schedule;
@@ -25,10 +26,11 @@ import java.util.Map;
 public class HospitalServiceImpl implements HospitalService {
 
 	@Autowired
-	private ScheduleMapper hospitalMapper;
+	private ScheduleMapper scheduleMapper;
 
     @Autowired
     private OrderInfoMapper orderInfoMapper;
+
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -60,9 +62,9 @@ public class HospitalServiceImpl implements HospitalService {
 
         Map<String, Object> resultMap = new HashMap<>();
         int availableNumber = schedule.getAvailableNumber().intValue() - 1;
-        if(availableNumber > 0) {
+        if(availableNumber >= 0) {
             schedule.setAvailableNumber(availableNumber);
-            hospitalMapper.updateById(schedule);
+            scheduleMapper.updateById(schedule);
 
             //记录预约记录
             OrderInfo orderInfo = new OrderInfo();
@@ -115,13 +117,13 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     public void updateCancelStatus(Map<String, Object> paramMap) {
-        String hoscode = (String)paramMap.get("hoscode");
-        String hosRecordId = (String)paramMap.get("hosRecordId");
+            String hoscode = (String)paramMap.get("hoscode");
+            String hosRecordId = (String)paramMap.get("hosRecordId");
 
-        OrderInfo orderInfo = orderInfoMapper.selectById(hosRecordId);
-        if(null == orderInfo) {
-            throw new YyghException(ResultCodeEnum.DATA_ERROR);
-        }
+            OrderInfo orderInfo = orderInfoMapper.selectById(hosRecordId);
+            if(null == orderInfo) {
+                throw new YyghException(ResultCodeEnum.DATA_ERROR);
+            }
         //已取消
         orderInfo.setOrderStatus(-1);
         orderInfo.setQuitTime(new Date());
@@ -129,7 +131,7 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     private Schedule getSchedule(String frontSchId) {
-        return hospitalMapper.selectById(frontSchId);
+        return scheduleMapper.selectById(frontSchId);
     }
 
     /**

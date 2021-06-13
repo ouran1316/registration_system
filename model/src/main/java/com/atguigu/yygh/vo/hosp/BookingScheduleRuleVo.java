@@ -19,7 +19,7 @@ import java.util.Date;
 public class BookingScheduleRuleVo {
 	
 	@ApiModelProperty(value = "可预约日期")
-	@JsonFormat(pattern = "yyyy-MM-dd")
+	@JsonFormat(pattern = "yyyy-MM-dd", timezone="GMT+8")
 	private Date workDate;
 
 	@ApiModelProperty(value = "可预约日期")

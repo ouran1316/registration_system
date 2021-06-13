@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Security;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author ouran
@@ -30,7 +31,7 @@ import java.util.Random;
 @Api(tags = "医院设置管理")
 @RestController
 @RequestMapping(value = "/admin/hosp/hospitalSet")
-@CrossOrigin    //允许跨域请求
+//@CrossOrigin    //允许跨域请求
 public class HospitalSetController {
 
     //注入 service

@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -21,7 +22,7 @@ import java.util.Date;
 @Data
 @ApiModel(description = "Schedule")
 @Document("Schedule")
-public class Schedule extends BaseMongoEntity {
+public class Schedule extends BaseMongoEntity implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -43,7 +44,7 @@ public class Schedule extends BaseMongoEntity {
 	private String skill;
 
 	@ApiModelProperty(value = "排班日期")
-	@JsonFormat(pattern = "yyyy-MM-dd")
+	@JsonFormat(pattern = "yyyy-MM-dd",timezone = "Asia/Shanghai")
 	private Date workDate;
 
 	@ApiModelProperty(value = "排班时间（0：上午 1：下午）")
