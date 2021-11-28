@@ -54,7 +54,6 @@ public class HospitalServiceImpl implements HospitalService {
             hospitalRepository.save(hospital);
         }
 
-
     }
 
     //查询医院

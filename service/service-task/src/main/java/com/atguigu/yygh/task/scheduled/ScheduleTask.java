@@ -2,6 +2,7 @@ package com.atguigu.yygh.task.scheduled;
 
 import com.atguigu.common.rabbit.constant.MqConst;
 import com.atguigu.common.rabbit.service.RabbitService;
+import com.atguigu.yygh.vo.order.OrderMqVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,11 +21,13 @@ public class ScheduleTask {
     @Autowired
     RabbitService rabbitService;
 
+    //秒 分 时 日 月 年
     //每天 8 点执行方法，就医提醒  0 0 8 * * ?
     // 0/30 * * * * ? 30秒一次 测试
     //cron表达式，设置执行间隔
     @Scheduled(cron = "0 0 8 * * ?")
     public void taskPatient() {
-        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_TASK, MqConst.ROUTING_TASK_8, "");
+        OrderMqVo orderMqVo = new OrderMqVo();
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_TASK, MqConst.ROUTING_TASK_8, orderMqVo);
     }
 }

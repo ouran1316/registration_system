@@ -1,8 +1,8 @@
-package com.atguigu.yygh.order.receiver;
+package com.atguigu.yygh.msm.receiver;
 
 import com.atguigu.common.rabbit.constant.MqConst;
-import com.atguigu.yygh.order.service.OrderService;
-import com.atguigu.yygh.vo.order.OrderMqVo;
+import com.atguigu.yygh.msm.service.MsmService;
+import com.atguigu.yygh.vo.msm.MsmVo;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.Exchange;
@@ -19,28 +19,30 @@ import java.io.IOException;
 /**
  * @Author ouran
  * @Version 1.0
- * @Date 2021/6/2 15:04
+ * @Date 2021/7/19 23:12
  */
+
 @Component
-public class OrderReceiver {
+public class MsmReceivers {
 
     @Autowired
-    private OrderService orderService;
+    private MsmService msmService;
 
+    //接收定时预约提醒
     @RabbitListener(bindings = @QueueBinding(
-            value = @Queue(value = MqConst.QUEUE_TASK_8, durable = "true"),
-            exchange = @Exchange(value = MqConst.EXCHANGE_DIRECT_TASK),
-            key = {MqConst.ROUTING_TASK_8}
+            value = @Queue(value = MqConst.QUEUE_MSM_ITEM2, durable = "true"),
+            exchange = @Exchange(value = MqConst.EXCHANGE_DIRECT_MSM),
+            key = {MqConst.ROUTING_MSM_ITEM}
     ))
-    public void patientTips(OrderMqVo orderMqVo, Message message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
+    public void send2(MsmVo[] msmVos, Message message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
         try {
-            orderService.patientTips();
+            if(msmVos.length > 0) {
+                msmService.sends(msmVos);
+            }
             channel.basicAck(tag, false);
         } catch (Exception e) {
             channel.basicNack(tag,false,true);
         }
 
-
     }
-
 }

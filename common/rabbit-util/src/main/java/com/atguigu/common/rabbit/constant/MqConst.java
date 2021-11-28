@@ -22,6 +22,7 @@ public class MqConst {
     public static final String ROUTING_MSM_ITEM = "msm.item";
     //队列
     public static final String QUEUE_MSM_ITEM  = "queue.msm.item";
+    public static final String QUEUE_MSM_ITEM2  = "queue.msm.item2";
 
     /**
      * 定时任务，提醒预约

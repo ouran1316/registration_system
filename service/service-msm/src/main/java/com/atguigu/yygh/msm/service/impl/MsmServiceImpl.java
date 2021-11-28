@@ -11,7 +11,12 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author ouran
@@ -25,6 +30,17 @@ MsmServiceImpl implements MsmService {
     @Autowired
     JavaMailSenderImpl mailSender;
 
+    //创建线程池
+    private static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+            3,
+            8,//IO 密集型
+            3,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(3),
+            Executors.defaultThreadFactory(),
+            new ThreadPoolExecutor.AbortPolicy()//抛出异常，拒绝新来的任务
+    );
+
     //发送邮箱验证码
     @Override
     public boolean send(String email, String code) {
@@ -36,7 +52,7 @@ MsmServiceImpl implements MsmService {
         //邮件设置1：一个简单的邮件
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject("尚医通预约挂号平台通知");
-        message.setText(code);
+        message.setText(code + " 时间：" + System.currentTimeMillis());
 
         message.setTo(email);
         message.setFrom("1316049625@qq.com");
@@ -47,7 +63,7 @@ MsmServiceImpl implements MsmService {
         return true;
     }
 
-    //mq 使用发送邮箱
+    //mq 发送预约成功通知，定时提醒
     public boolean send(MsmVo msmVo) {
         if (!StringUtils.isEmpty(msmVo.getPhone())) {
             return this.send(msmVo.getPhone(), msmVo.getParam());
@@ -64,7 +80,7 @@ MsmServiceImpl implements MsmService {
         //邮件设置1：一个简单的邮件
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject((String) param.get("title"));
-        message.setText(JSONObject.toJSONString((String) param.get("reserveDate")));
+        message.setText(JSONObject.toJSONString((String) param.get("reserveDate")) + " 时间：" + System.currentTimeMillis());
 
         message.setTo(email);
         message.setFrom("1316049625@qq.com");
@@ -74,8 +90,23 @@ MsmServiceImpl implements MsmService {
             System.out.println("发送邮件时发生异常！可能有无效的邮箱");
         }
 
+        //TODO 这里应该要加一个异常捕获
+        return true;
+    }
 
-        //这里应该要加一个异常捕获
+    //多线程发送预约提醒
+    public boolean sends(MsmVo[] msmVos) {
+        try {
+            for (MsmVo msmVo : msmVos) {
+                if (!StringUtils.isEmpty(msmVo.getPhone())) {
+                    threadPoolExecutor.execute(() -> {
+                        this.send(msmVo.getPhone(), msmVo.getParam());
+                    });
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return true;
     }

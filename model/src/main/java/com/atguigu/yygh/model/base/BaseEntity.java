@@ -17,7 +17,7 @@ import java.util.Map;
 public class BaseEntity implements Serializable {
 
     @ApiModelProperty(value = "id")
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.AUTO)    //数据库自增 ID
     private Long id;
 
     @ApiModelProperty(value = "创建时间")

@@ -14,6 +14,8 @@ import com.atguigu.hospital.util.YyghException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -31,9 +33,9 @@ public class HospitalServiceImpl implements HospitalService {
     @Autowired
     private OrderInfoMapper orderInfoMapper;
 
-
-    @Transactional(rollbackFor = Exception.class)
+    //提交订单
     @Override
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
     public Map<String, Object> submitOrder(Map<String, Object> paramMap) {
         log.info(JSONObject.toJSONString(paramMap));
         String hoscode = (String)paramMap.get("hoscode");
@@ -64,7 +66,9 @@ public class HospitalServiceImpl implements HospitalService {
         int availableNumber = schedule.getAvailableNumber().intValue() - 1;
         if(availableNumber >= 0) {
             schedule.setAvailableNumber(availableNumber);
+            //这里高并发会有多线程安全隐患，应该要增加 where aviableNumber = x，增加行锁
             scheduleMapper.updateById(schedule);
+
 
             //记录预约记录
             OrderInfo orderInfo = new OrderInfo();
@@ -130,7 +134,9 @@ public class HospitalServiceImpl implements HospitalService {
         orderInfoMapper.updateById(orderInfo);
     }
 
-    private Schedule getSchedule(String frontSchId) {
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ,
+            readOnly = true, rollbackFor = Exception.class)
+    public Schedule getSchedule(String frontSchId) {
         return scheduleMapper.selectById(frontSchId);
     }
 

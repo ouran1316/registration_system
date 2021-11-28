@@ -36,17 +36,17 @@ spring:
           uri: lb://service-msm
           predicates:
             - Path=/*/msm/**
-        # 发送邮箱验证码
+        # 存储图片
         - id: service-oss
           uri: lb://service-oss
           predicates:
             - Path=/*/oss/**
-        # 发送邮箱验证码
+        # 订单模块
         - id: service-order
           uri: lb://service-order
           predicates:
             - Path=/*/order/**
-        # 发送邮箱验证码
+        # 获取订单数据
         - id: service-statistics
           uri: lb://service-statistics
           predicates:

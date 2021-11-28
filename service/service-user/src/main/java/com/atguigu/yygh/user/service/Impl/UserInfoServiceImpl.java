@@ -10,6 +10,7 @@ import com.atguigu.yygh.model.user.UserInfo;
 import com.atguigu.yygh.user.mapper.UserInfoMapper;
 import com.atguigu.yygh.user.service.PatientService;
 import com.atguigu.yygh.user.service.UserInfoService;
+import com.atguigu.yygh.user.util.SlidingWindowCounter;
 import com.atguigu.yygh.vo.user.LoginVo;
 import com.atguigu.yygh.vo.user.UserAuthVo;
 import com.atguigu.yygh.vo.user.UserInfoQueryVo;
@@ -34,12 +35,21 @@ import java.util.Map;
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoService {
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
-
-    @Autowired
     private PatientService patientService;
 
-    //用户手机号登陆接口
+    @Autowired
+    private SlidingWindowCounter slidingWindowCounter;
+
+    @Autowired
+    private UserInfoService userInfoService;
+
+    @Autowired
+    private RedisTemplate<String,String> redisTemplate;
+
+    private final static int windowInSecond = 60;
+    private final static int maxCount = 5;
+
+    //用户手机号登陆接口，正式登陆方法
     @Override
     public Map<String, Object> loginUser(LoginVo loginVo) {
 
@@ -56,6 +66,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //注：redis 里存的是 邮箱验证码 本次直接使用页面验证码吧，不用手机验证码了
         String redisCode = redisTemplate.opsForValue().get(phone);
         if(!code.equals(redisCode)) {
+            //TODO 假如登陆限流
+            //限流处理
+            if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
+                throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);
+            }
             throw new HospitalException(ResultCodeEnum.CODE_ERROR);
         }
 
@@ -110,6 +125,41 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return map;
     }
+
+//    //用户手机号登陆接口2，用于测试限流算法的效果
+//    @Override
+//    public Map<String, Object> loginUser(LoginVo loginVo) {
+//
+//        //从loginVo获取输入的手机号，和验证码
+//        String phone = loginVo.getPhone();
+//        String code = loginVo.getCode();
+//
+//        //判断手机号和验证码是否为空
+//        if(StringUtils.isEmpty(phone) || StringUtils.isEmpty(code)) {
+//            throw new HospitalException(ResultCodeEnum.PARAM_ERROR);
+//        }
+//
+//        if (slidingWindowCounter.overMaxCount(phone, windowInSecond, maxCount)) {
+//            throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);    //333
+//        }
+//
+//        UserInfo userInfo = baseMapper.selectOne(new QueryWrapper<UserInfo>()
+//                .eq("phone", phone)
+//                .eq("openid", Integer.parseInt(code))
+//        );
+//
+//        if(userInfo == null) {
+//            //限流处理
+////            if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
+////                throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);    //333
+////            }
+//            throw new HospitalException(ResultCodeEnum.CODE_ERROR); //210
+//        }
+//
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("name", userInfo.getName());
+//        return map;
+//    }
 
     //用户认证
     @Override
@@ -178,6 +228,5 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.getParam().put("statusString", statusString);
         return userInfo;
     }
-
 
 }

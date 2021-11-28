@@ -140,6 +140,8 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
             orderMqVo.setScheduleId(scheduleId);
             orderMqVo.setReservedNumber(reservedNumber);
             orderMqVo.setAvailableNumber(availableNumber);
+            //订单id
+            orderMqVo.setId(orderInfo.getId());
             //短信提示
             MsmVo msmVo = new MsmVo();
             msmVo.setPhone(orderInfo.getPatientPhone());
@@ -154,8 +156,13 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
             msmVo.setParam(param);
             orderMqVo.setMsmVo(msmVo);
 
-            //发送
+            //发送到 mq，更新 mongodb 预约数 和发邮件
             rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_ORDER, MqConst.ROUTING_ORDER, orderMqVo);
+            //发送到 mq，发送邮件提醒
+//            if(null != msmVo) {
+//                rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_ORDER, MqConst.ROUTING_ORDER, msmVo);
+//            }
+
         } else {
             throw new HospitalException(result.getString("message"), ResultCodeEnum.FAIL.getCode());
         }
@@ -235,6 +242,8 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
                 .eq("reserve_date", new DateTime().toString("yyyy-MM-dd"))
                 .ne("order_status", OrderStatusEnum.CANCLE.getStatus() ));
 
+        MsmVo[] msmVos = new MsmVo[orderInfoList.size()];
+        int x = 0;
         for(OrderInfo orderInfo:orderInfoList) {
             //短信提示
             MsmVo msmVo = new MsmVo();
@@ -246,14 +255,17 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
                 put("name", orderInfo.getPatientName());
             }};
             msmVo.setParam(param);
-            rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_MSM, MqConst.ROUTING_MSM_ITEM, msmVo);
+            msmVos[x++] = msmVo;
+//            rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_ORDER, MqConst.ROUTING_MSM_ITEM, msmVo);
         }
+        //发过去一个集合
+        rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_MSM, MqConst.ROUTING_MSM_ITEM, msmVos);
     }
 
     //预约统计
     @Override
     public Map<String, Object> getCountMap(OrderCountQueryVo orderCountQueryVo) {
-        //调用 mapper 方法得到数据
+        //调用 mapper 方法得到数据，获取哪一天预约有多少人
         List<OrderCountVo> orderCountVos = baseMapper.selectOrderCount(orderCountQueryVo);
 
         //获取 x 需要的数据，日期数据，list 集合

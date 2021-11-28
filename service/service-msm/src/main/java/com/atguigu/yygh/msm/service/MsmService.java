@@ -2,6 +2,7 @@ package com.atguigu.yygh.msm.service;
 
 import com.atguigu.yygh.vo.msm.MsmVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,4 +16,7 @@ public interface MsmService {
 
     //mq 使用发送邮箱
     boolean send(MsmVo msmVo);
+
+    //发送大量预约提醒
+    boolean sends(MsmVo[] msmVos);
 }

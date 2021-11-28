@@ -131,5 +131,4 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         return count > 0;
     }
 
-
 }

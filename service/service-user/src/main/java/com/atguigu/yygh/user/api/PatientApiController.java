@@ -38,6 +38,8 @@ public class PatientApiController  {
     //添加就诊人（不一定是用户本人,可以userId下绑定了多个就诊人）
     @PostMapping("/auth/save")
     public Result savePatient(@RequestBody Patient patient, HttpServletRequest request) {
+        //TODO 这里添加一个身份证编号是否存在的判断，已存在直接报错
+
         Long userId = AuthContextHolder.getUserId(request);
         patient.setUserId(userId);
         patientService.save(patient);
