@@ -94,7 +94,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (userInfo == null) { //第一次使用这个手机号登陆
                 //添加信息到数据库
                 userInfo = new UserInfo();
-                userInfo.setName("");
+                userInfo.setName(phone);
                 userInfo.setPhone(phone);
                 userInfo.setStatus(1);
                 baseMapper.insert(userInfo);

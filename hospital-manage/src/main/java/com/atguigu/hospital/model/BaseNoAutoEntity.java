@@ -16,6 +16,7 @@ import java.util.Map;
 public class BaseNoAutoEntity implements Serializable {
 
     @ApiModelProperty(value = "id")
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     @ApiModelProperty(value = "创建时间")

@@ -1,5 +1,7 @@
 package com.atguigu.yygh.hosp.client;
 
+import com.atguigu.yygh.common.result.Result;
+import com.atguigu.yygh.model.hosp.Schedule;
 import com.atguigu.yygh.vo.hosp.ScheduleOrderVo;
 import com.atguigu.yygh.vo.order.SignInfoVo;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +27,14 @@ public interface HospFeighClient {
      */
     @GetMapping("/api/hosp/hospital/inner/getScheduleOrderVo/{scheduleId}")
     public ScheduleOrderVo getScheduleOrderVo(@PathVariable("scheduleId") String scheduleId);
+
+    /**
+     * 根据排班id获取排班详细数据
+     * @param scheduleId
+     * @return
+     */
+    @GetMapping("/api/hosp/hospital/getSchedule/{scheduleId}")
+    public Result<Schedule> getSchedule(@PathVariable("scheduleId") String scheduleId);
 
     /**
      * 获取医院签名信息

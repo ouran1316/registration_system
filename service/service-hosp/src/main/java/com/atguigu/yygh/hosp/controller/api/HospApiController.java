@@ -1,5 +1,8 @@
 package com.atguigu.yygh.hosp.controller.api;
 
+import com.atguigu.yygh.ScheduleCommonRequest;
+import com.atguigu.yygh.ScheduleConstant;
+import com.atguigu.yygh.ScheduleResponse;
 import com.atguigu.yygh.common.result.Result;
 import com.atguigu.yygh.hosp.service.DepartmentService;
 import com.atguigu.yygh.hosp.service.HospitalService;
@@ -7,6 +10,7 @@ import com.atguigu.yygh.hosp.service.HospitalSetService;
 import com.atguigu.yygh.hosp.service.ScheduleService;
 import com.atguigu.yygh.model.hosp.Hospital;
 import com.atguigu.yygh.model.hosp.Schedule;
+import com.atguigu.yygh.model.hosp.ScheduleDocResponse;
 import com.atguigu.yygh.vo.hosp.DepartmentVo;
 import com.atguigu.yygh.vo.hosp.HospitalQueryVo;
 import com.atguigu.yygh.vo.hosp.ScheduleOrderVo;
@@ -90,6 +94,21 @@ public class HospApiController {
         return Result.ok(scheduleService.getBookingScheduleRule(page, limit, hoscode, depcode));
     }
 
+    @ApiOperation(value = "查询场地数据")
+    @GetMapping("auth/getDocName/{page}/{limit}/{hoscode}/{depcode}/{workDate}")
+    public Result getDocName(@PathVariable long page,
+                             @PathVariable long limit,
+                             @PathVariable String hoscode,
+                             @PathVariable String depcode,
+                             @PathVariable String workDate) {
+        ScheduleResponse<ScheduleDocResponse> docName = scheduleService.getDocName(
+                new ScheduleCommonRequest((int) page, (int) limit, hoscode, depcode, workDate));
+        if (null == docName) {
+            return Result.fail(ScheduleConstant.GET_DOC_NAME_FAIL);
+        }
+        return Result.ok(docName.getData());
+    }
+
     @ApiOperation(value = "获取排班数据")
     @GetMapping("auth/findScheduleList/{hoscode}/{depcode}/{workDate}")
     public Result findScheduleList(
@@ -102,12 +121,26 @@ public class HospApiController {
         return Result.ok(scheduleService.getDetailSchedule(hoscode, depcode, workDate));
     }
 
+    @ApiOperation(value = "通过时间和场地号获取排班数据")
+    @GetMapping("auth/findScheduleListByDateAndDoc/{hoscode}/{depcode}/{workDate}/{docName}")
+    public Result findScheduleListByDateAndDoc(
+            @ApiParam(name = "hoscode", value = "医院code", required = true)
+            @PathVariable String hoscode,
+            @ApiParam(name = "depcode", value = "科室code", required = true)
+            @PathVariable String depcode,
+            @ApiParam(name = "workDate", value = "排班日期", required = true)
+            @PathVariable String workDate,
+            @ApiParam(name = "docName", value = "场地号", required = true)
+            @PathVariable String docName) {
+        return Result.ok(scheduleService.getDetailSchedule2(hoscode, depcode, workDate, docName));
+    }
+
     @ApiOperation(value = "根据排班id获取排班详细数据")
     @GetMapping("/getSchedule/{scheduleId}")
     public Result getSchedule(@PathVariable String scheduleId) {
         Schedule schedule = scheduleService.getScheduleId(scheduleId);
         return Result.ok(schedule);
-    }
+}
 
     @ApiOperation(value = "根据排班id获取预约下单数据")
     @GetMapping("inner/getScheduleOrderVo/{scheduleId}")

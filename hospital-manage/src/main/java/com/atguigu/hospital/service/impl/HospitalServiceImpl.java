@@ -121,17 +121,27 @@ public class HospitalServiceImpl implements HospitalService {
 
     @Override
     public void updateCancelStatus(Map<String, Object> paramMap) {
-            String hoscode = (String)paramMap.get("hoscode");
-            String hosRecordId = (String)paramMap.get("hosRecordId");
-
+        String hoscode = (String)paramMap.get("hoscode");
+        String hosRecordId = (String)paramMap.get("hosRecordId");
+        String scheduleId = (String)paramMap.get("scheduleId");
+        try {
             OrderInfo orderInfo = orderInfoMapper.selectById(hosRecordId);
-            if(null == orderInfo) {
+            Schedule schedule = scheduleMapper.selectById(scheduleId);
+            if(null == orderInfo || null == schedule) {
                 throw new YyghException(ResultCodeEnum.DATA_ERROR);
             }
-        //已取消
-        orderInfo.setOrderStatus(-1);
-        orderInfo.setQuitTime(new Date());
-        orderInfoMapper.updateById(orderInfo);
+
+            //已取消
+            orderInfo.setOrderStatus(-1);
+            orderInfo.setQuitTime(new Date());
+            orderInfoMapper.updateById(orderInfo);
+            // 更新schedule表可预约数
+            schedule.setAvailableNumber(1);
+            scheduleMapper.updateById(schedule);
+        } catch (Exception e) {
+            throw new YyghException(ResultCodeEnum.DATA_ERROR);
+        }
+
     }
 
     @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.REPEATABLE_READ,

@@ -14,13 +14,13 @@ public class DepartmentQueryVo {
 	@ApiModelProperty(value = "科室编号")
 	private String depcode;
 
-	@ApiModelProperty(value = "科室名称")
+	@ApiModelProperty(value = "场地")
 	private String depname;
 
 	@ApiModelProperty(value = "大科室编号")
 	private String bigcode;
 
-	@ApiModelProperty(value = "大科室名称")
+	@ApiModelProperty(value = "单位")
 	private String bigname;
 
 }

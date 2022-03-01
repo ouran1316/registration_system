@@ -13,7 +13,7 @@ public class DepartmentVo {
 	@ApiModelProperty(value = "科室编号")
 	private String depcode;
 
-	@ApiModelProperty(value = "科室名称")
+	@ApiModelProperty(value = "场地")
 	private String depname;
 
 	@ApiModelProperty(value = "下级节点")

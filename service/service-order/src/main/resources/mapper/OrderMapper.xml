@@ -6,7 +6,7 @@
         select count(*) as count, reserve_date AS reserveDate From order_info
         <where>
             <if test="vo.hosname!= null and vo.hosname!=''">
-                and hosname like CONCAT('%', #{hosname}, '%')
+                and hosname like CONCAT('%', #{vo.hosname}, '%')
             </if>
             <if test="vo.reserveDateBegin != null and vo.reserveDateBegin != ''">
                 and reserve_date >= #{vo.reserveDateBegin}
@@ -19,5 +19,42 @@
         </where>
         GROUP BY reserve_date
         ORDER BY reserve_date
+    </select>
+
+    <resultMap id="orderInfoResultMap" type="com.atguigu.yygh.model.order.OrderInfo">
+        <!--
+            id：主键
+            column：映射到表中的字段
+            property：对象字段
+         -->
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="hosname" property="hosname"/>
+        <result column="depname" property="depname"/>
+        <result column="out_trade_no" property="outTradeNo"/>
+        <result column="title" property="title"/>
+        <result column="reserveDate" property="reserveDate"/>
+        <result column="amount" property="amount"/>
+        <result column="order_status" property="orderStatus"/>
+        <result column="name" property="name"/>
+        <result column="phone" property="phone"/>
+        <result column="sex" property="sex"/>
+        <result column="create_time" property="createTime"/>
+        <result column="schedule_id" property="scheduleId"/>
+    </resultMap>
+    
+    <select id="selectUserOrders" resultMap="orderInfoResultMap">
+        select * from order_info
+        <where>
+            <if test="vo.reserveDateBegin != null and vo.reserveDateBegin != ''">
+                and reserve_date >= #{vo.reserveDateBegin}
+            </if>
+            <if test="vo.reserveDateEnd != null and vo.reserveDateEnd != ''">
+                and reserve_date &lt;= #{vo.reserveDateEnd}
+            </if>
+            and is_deleted = 0
+            and user_id = #{vo.userId}
+            order by create_time desc
+        </where>
     </select>
 </mapper>

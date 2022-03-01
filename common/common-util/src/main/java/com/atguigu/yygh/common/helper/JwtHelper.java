@@ -34,9 +34,14 @@ public class JwtHelper {
     //如果 token 已经过期这里还获取会报500
     public static Long getUserId(String token) {
         if(StringUtils.isEmpty(token)) return null;
-        Jws<Claims> claimsJws = Jwts.parser().setSigningKey(tokenSignKey).parseClaimsJws(token);
-        Claims claims = claimsJws.getBody();
-        Integer userId = (Integer)claims.get("userId");
+        Integer userId;
+        try {
+            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(tokenSignKey).parseClaimsJws(token);
+            Claims claims = claimsJws.getBody();
+            userId = (Integer)claims.get("userId");
+        } catch (Exception e) {
+            return null;
+        }
         return userId.longValue();
     }
 

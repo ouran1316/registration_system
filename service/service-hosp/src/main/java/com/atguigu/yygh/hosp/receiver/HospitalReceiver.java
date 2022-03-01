@@ -55,7 +55,7 @@ public class HospitalReceiver {
 //                return;
 //            }
 
-            //下单成功更新预约数
+            // 下单成功或取消预约更新预约数
             Schedule schedule = scheduleService.getScheduleId(orderMqVo.getScheduleId());
             schedule.setReservedNumber(orderMqVo.getReservedNumber());
             schedule.setAvailableNumber(orderMqVo.getAvailableNumber());

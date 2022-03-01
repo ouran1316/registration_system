@@ -31,15 +31,15 @@ public class Schedule extends BaseNoAutoEntity {
 	@TableField("depcode")
 	private String depcode;
 
-	@ApiModelProperty(value = "职称")
+	@ApiModelProperty(value = "场馆")
 	@TableField("title")
 	private String title;
 
-	@ApiModelProperty(value = "医生名称")
+	@ApiModelProperty(value = "场地号")
 	@TableField("docname")
 	private String docname;
 
-	@ApiModelProperty(value = "擅长技能")
+	@ApiModelProperty(value = "预约时长")
 	@TableField("skill")
 	private String skill;
 
@@ -59,7 +59,7 @@ public class Schedule extends BaseNoAutoEntity {
 	@TableField("available_number")
 	private Integer availableNumber;
 
-	@ApiModelProperty(value = "挂号费")
+	@ApiModelProperty(value = "费用")
 	@TableField("amount")
 	private String amount;
 

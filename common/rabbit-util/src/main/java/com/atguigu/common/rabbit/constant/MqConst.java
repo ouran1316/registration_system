@@ -32,5 +32,12 @@ public class MqConst {
     //队列
     public static final String QUEUE_TASK_8 = "queue.task.8";
 
+    /**
+     * 定时任务，更新Schedule
+     */
+    public static final String EXCHANGE_DIRECT_UPDATE_SCHEDULE = "exchange.direct.update.schedule";
+    public static final String ROUTING_UPDATE_SCHEDULE_8 = "update.schedule.8";
+    //队列
+    public static final String QUEUE_UPDATE_SCHEDULE_8 = "queue.update.schedule.8";
 }
 

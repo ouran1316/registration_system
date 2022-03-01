@@ -2,6 +2,8 @@ package com.atguigu.yygh.hosp.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.atguigu.yygh.ScheduleCommonRequest;
+import com.atguigu.yygh.ScheduleResponse;
 import com.atguigu.yygh.common.exception.HospitalException;
 import com.atguigu.yygh.common.result.ResultCodeEnum;
 import com.atguigu.yygh.hosp.mapper.ScheduleMapper;
@@ -9,16 +11,15 @@ import com.atguigu.yygh.hosp.repository.ScheduleRepository;
 import com.atguigu.yygh.hosp.service.DepartmentService;
 import com.atguigu.yygh.hosp.service.HospitalService;
 import com.atguigu.yygh.hosp.service.ScheduleService;
-import com.atguigu.yygh.model.hosp.BookingRule;
-import com.atguigu.yygh.model.hosp.Department;
-import com.atguigu.yygh.model.hosp.Hospital;
-import com.atguigu.yygh.model.hosp.Schedule;
+import com.atguigu.yygh.model.hosp.*;
 import com.atguigu.yygh.vo.hosp.BookingScheduleRuleVo;
 import com.atguigu.yygh.vo.hosp.ScheduleOrderVo;
 import com.atguigu.yygh.vo.hosp.ScheduleQueryVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.format.DateTimeFormat;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
  * @Date 2021/5/22 16:04
  */
 @Service
+@Slf4j
 public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> implements ScheduleService {
     @Autowired
     ScheduleRepository scheduleRepository;
@@ -63,7 +66,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
         Schedule schedule = JSONObject.parseObject(paramMapString,Schedule.class);
         //根据医院编号 和 排班编号查询
         Schedule scheduleExist = scheduleRepository.
-                getScheduleByHoscodeAndHosScheduleId(schedule.getHoscode(),schedule.getHosScheduleId());
+                getScheduleByHoscodeAndHosScheduleId(schedule.getHoscode(), schedule.getId());
         //判断
         if(scheduleExist!=null) {
             scheduleExist.setUpdateTime(new Date());
@@ -172,13 +175,40 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     @Override
     public List<Schedule> getDetailSchedule(String hoscode, String depcode, String workDate) {
         //根据参数查询mongodb
-        List<Schedule> scheduleList =
-                scheduleRepository.findScheduleByHoscodeAndDepcodeAndWorkDate(hoscode, depcode, new DateTime(workDate).toDate());
+        List<Schedule> scheduleList = scheduleRepository.findScheduleByHoscodeAndDepcodeAndWorkDate(
+                hoscode, depcode, new DateTime(workDate).toDate());
         //把得到list集合遍历，向设置其他值：医院名称、科室名称、日期对应星期
         scheduleList.stream().forEach(item->{
             this.packageSchedule(item);
         });
         return scheduleList;
+    }
+
+    @Override
+    public List<Schedule> getDetailSchedule2(String hoscode, String depcode, String workDate, String docName) {
+        // 根据参数查询mongodb
+        List<Schedule> scheduleList = scheduleRepository.findScheduleByHoscodeAndDepcodeAndWorkDateAndDocname(
+                hoscode, depcode, new DateTime(workDate).toDate(), docName);
+        // 过滤已过预约时间场地
+
+        // 把得到list集合遍历，向设置其他值：医院名称、科室名称、日期对应星期
+        List<Schedule> result = scheduleList.stream().filter(item -> {
+            String date = new SimpleDateFormat("yyyy-MM-dd#HH：mm").format(new Date());
+            String time = date.split("#")[1];
+            String scheduleDate = date.split("#")[0];
+            String areaValidTime = item.getSkill().split("-")[0].trim();
+            if (scheduleDate.compareTo(workDate) < 0) {
+                return true;
+            } else if (areaValidTime.split("：")[0].length() < 2) {
+                areaValidTime = "0" + areaValidTime;
+            }
+            return areaValidTime.compareTo(time) >= 0;
+        }).collect(Collectors.toList());
+
+        result.stream().forEach(item->{
+            this.packageSchedule(item);
+        });
+        return result;
     }
 
     //获取可预约排班数据
@@ -249,20 +279,20 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             String dayOfWeek = this.getDayOfWeek(new DateTime(date));
             bookingScheduleRuleVo.setDayOfWeek(dayOfWeek);
 
-            //最后一页最后一条记录为即将预约   状态 0：正常 1：即将放号 -1：当天已停止挂号
+            //最后一页最后一条记录为即将预约   状态 0：正常；1：即将放号； -1：当天已停止挂号
             if(i == dateList.size() - 1 && page == iPage.getPages()) {
                 bookingScheduleRuleVo.setStatus(1);
             } else {
                 bookingScheduleRuleVo.setStatus(0);
             }
-            //当天预约如果过了停号时间， 不能预约
-            if(i == 0 && page == 1) {
-                DateTime stopTime = this.getDateTime(new Date(), bookingRule.getStopTime());
-                if(stopTime.isBeforeNow()) {
-                    //停止预约
-                    bookingScheduleRuleVo.setStatus(-1);
-                }
-            }
+            // 当天预约如果过了停号时间，不能预约。下线停号
+//            if(i == 0 && page == 1) {
+//                DateTime stopTime = this.getDateTime(new Date(), bookingRule.getStopTime());
+//                if(stopTime.isBeforeNow()) {
+//                    //停止预约
+//                    bookingScheduleRuleVo.setStatus(-1);
+//                }
+//            }
             if (flag) scheduleRuleVoList.add(i, bookingScheduleRuleVo);
         }
 
@@ -295,7 +325,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     public Schedule getScheduleId(String scheduleId) {
         //TODO 这里有点问题；。。。。。。 有 id 格式不同的传进来了
         Schedule schedule = scheduleRepository.findById(scheduleId).get();
-        return schedule;
+        return this.packageSchedule(schedule);
     }
 
     //根据排班id获取预约下单数据
@@ -353,6 +383,82 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     public void update(Schedule schedule) {
         schedule.setUpdateTime(new Date());
         scheduleRepository.save(schedule);
+    }
+
+    @Override
+    public ScheduleResponse<ScheduleDocResponse> getDocName(ScheduleCommonRequest request) {
+        if (null == request) {
+            return null;
+        }
+        ScheduleResponse<ScheduleDocResponse> scResponse = new ScheduleResponse<>();
+        scResponse.setData(new ScheduleDocResponse());
+        int limit = request.getLimit();
+        int page = request.getPage();
+        try {
+//            List<String> docName = Lists.newArrayList();
+//            // 分页查询，条件为
+//            Sort sort = Sort.by(Sort.Direction.ASC, "docName");
+//            Pageable pageable = PageRequest.of(page, limit, sort);
+//            ExampleMatcher exampleMatcher = ExampleMatcher.matching()
+//                    .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING).withIgnoreCase(true);
+//            Schedule schedule = new Schedule();
+//            // 条件为 depcode hoscode date
+//            schedule.setWorkDate(new DateTime(request.getDate()).toDate());
+//            schedule.setDepcode(request.getDepcode());
+//            schedule.setHoscode(request.getHosode());
+//            Example<Schedule> example = Example.of(schedule, exampleMatcher);
+//            Page<Schedule> schedules = scheduleRepository.findAll(example, pageable);
+
+            // 第二种查询方法，只查询不分页
+            List<Schedule> records = scheduleRepository.findDistinctByHoscodeAndDepcodeAndWorkDate(
+                    request.getHosode(), request.getDepcode(), new DateTime(request.getDate()).toDate());
+            // 把得到list集合遍历，向设置其他值：医院名称、科室名称、日期对应星期
+            List<Schedule> result = records.stream().filter(item -> {
+
+                String[] date = new SimpleDateFormat("yyyy-MM-dd#HH：mm").format(new Date()).split("#");
+                String areaValidTime = item.getSkill().split("-")[0].trim();
+                if (date[0].compareTo(request.getDate()) < 0) {
+                    return true;
+                } else if (areaValidTime.split("：")[0].length() < 2) {
+                    areaValidTime = "0" + areaValidTime;
+                }
+                return areaValidTime.compareTo(date[1]) >= 0;
+            }).collect(Collectors.toList());
+
+            if (result.size() == 0) {
+                return scResponse;
+            }
+            // 第一页是 1
+            if (page <= 0) {
+                page = 1;
+            }
+            int start = (page - 1) * limit;
+            if (start >= result.size()) {
+                log.error("getDocName 分页长度超出");
+                return null;
+            }
+            start = start < 0 ? 0 : start;
+            // 结果转换，先去重
+            List<String> docNames = result.stream().map(Schedule::getDocname).distinct().collect(Collectors.toList());
+            // 分页
+            List<String> collect = docNames.stream().skip(start).limit(limit).collect(Collectors.toList());
+            List<Schedule> res = Lists.newArrayList();
+            collect.stream().forEach(sc -> {
+                Schedule s = new Schedule();
+                s.setDocname(sc);
+                res.add(s);
+            });
+
+            int total = docNames.size() / limit + (docNames.size() % limit > 0 ? 1 : 0);
+            scResponse.getData().setCurrentPage(page);
+            scResponse.getData().setLimit(limit);
+            scResponse.getData().setTotal(total);
+            scResponse.getData().setScheduleDocList(res);
+        } catch (Exception e) {
+            log.error("getDocName error", e);
+            return null;
+        }
+        return scResponse;
     }
 
     //获取可预约日期分页数据，根据周期分页显示

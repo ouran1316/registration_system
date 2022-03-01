@@ -17,4 +17,9 @@ public interface OrderMapper extends BaseMapper<OrderInfo> {
 
     //查询预约统计数据的方法
     List<OrderCountVo> selectOrderCount(@Param("vo") OrderCountQueryVo orderCountQueryVo);
+
+    /**
+     * 根据时间段条件查询用户预约订单
+     */
+    List<OrderInfo> selectUserOrders(@Param("vo") OrderCountQueryVo orderCountQueryVo);
 }

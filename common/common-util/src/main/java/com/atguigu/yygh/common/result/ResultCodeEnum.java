@@ -43,6 +43,7 @@ public enum ResultCodeEnum {
     SIGN_ERROR(300, "签名错误"),
     HOSPITAL_OPEN(310, "医院未开通，暂时不能访问"),
     HOSPITAL_LOCK(320, "医院被锁定，暂时不能访问"),
+    USERID_ERROR(400, "用户ID不存在")
     ;
 
     private Integer code;

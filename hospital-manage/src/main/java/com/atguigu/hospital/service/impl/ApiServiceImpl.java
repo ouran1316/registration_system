@@ -48,18 +48,18 @@ public class ApiServiceImpl implements ApiService {
 
     @Override
     public String getHoscode() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
+        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
         return hospitalSet.getHoscode();
     }
 
     @Override
     public String getSignKey() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
+        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
         return hospitalSet.getSignKey();
     }
 
-    private String getApiUrl() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
+    public String getApiUrl() {
+        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
         return hospitalSet.getApiUrl();
     }
 
@@ -83,7 +83,7 @@ public class ApiServiceImpl implements ApiService {
         JSONObject jsonObject = JSONObject.parseObject(data);
 
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode",jsonObject.getString("hoscode"));
         paramMap.put("hosname",jsonObject.getString("hosname"));
         paramMap.put("hostype",jsonObject.getString("hostype"));
         paramMap.put("provinceCode",jsonObject.getString("provinceCode"));
@@ -149,7 +149,7 @@ public class ApiServiceImpl implements ApiService {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("hoscode",this.getHoscode());
+            paramMap.put("hoscode",jsonObject.getString("hoscode"));
             paramMap.put("depcode",jsonObject.getString("depcode"));
             paramMap.put("depname",jsonObject.getString("depname"));
             paramMap.put("intro",jsonObject.getString("intro"));
@@ -221,10 +221,10 @@ public class ApiServiceImpl implements ApiService {
         for(int i=0, len=jsonArray.size(); i<len; i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-            Long id = jsonObject.getLong("hosScheduleId");
+//            Long id = jsonObject.getLong("hosScheduleId");
             Schedule schedule = new Schedule();
-            schedule.setId(id);
-            schedule.setHoscode(this.getHoscode());
+//            schedule.setId(id);
+            schedule.setHoscode(jsonObject.getString("hoscode"));
             schedule.setDepcode(jsonObject.getString("depcode"));
             schedule.setTitle(jsonObject.getString("title"));
             schedule.setDocname(jsonObject.getString("docname"));
@@ -235,17 +235,21 @@ public class ApiServiceImpl implements ApiService {
             schedule.setAvailableNumber(jsonObject.getInteger("availableNumber"));
             schedule.setAmount(jsonObject.getString("amount"));
             schedule.setStatus(1);
+            // 插入后mybatis-plus会将主键赋值到schedule中的id中
+            scheduleMapper.insert(schedule);
+            long scheduleId = schedule.getId();
+//            Schedule targetSchedule = scheduleMapper.selectById(id);
+//            if(null != targetSchedule) {
+//                //值copy不为null的值，该方法为自定义方法
+//                BeanUtils.copyBean(schedule, targetSchedule, Schedule.class);
+//                scheduleMapper.updateById(targetSchedule);
+//            } else {
+//                scheduleMapper.insert(schedule);
+//            }
 
-            Schedule targetSchedule = scheduleMapper.selectById(id);
-            if(null != targetSchedule) {
-                //值copy不为null的值，该方法为自定义方法
-                BeanUtils.copyBean(schedule, targetSchedule, Schedule.class);
-                scheduleMapper.updateById(targetSchedule);
-            } else {
-                scheduleMapper.insert(schedule);
-            }
 
             Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put("id", scheduleId);
             paramMap.put("hoscode",schedule.getHoscode());
             paramMap.put("depcode",schedule.getDepcode());
             paramMap.put("title",schedule.getTitle());
@@ -257,12 +261,11 @@ public class ApiServiceImpl implements ApiService {
             paramMap.put("availableNumber",schedule.getAvailableNumber());
             paramMap.put("amount",schedule.getAmount());
             paramMap.put("status",schedule.getStatus());
-            paramMap.put("hosScheduleId",schedule.getId());
+            paramMap.put("hosScheduleId", scheduleId);
             paramMap.put("timestamp", HttpRequestHelper.getTimestamp());
             paramMap.put("sign",HttpRequestHelper.getSign(paramMap, this.getSignKey()));
 
             JSONObject respone = HttpRequestHelper.sendRequest(paramMap,this.getApiUrl()+"/api/hosp/saveSchedule");
-            System.out.println(respone.toJSONString());
             if(null == respone || 200 != respone.getIntValue("code")) {
                 throw new YyghException(respone.getString("message"), 201);
             }
@@ -295,7 +298,7 @@ public class ApiServiceImpl implements ApiService {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             Map<String, Object> paramMap = new HashMap<>();
-            paramMap.put("hoscode","1000_"+i);
+            paramMap.put("hoscode",jsonObject.getString("hoscode"));
             paramMap.put("hosname",jsonObject.getString("hosname"));
             paramMap.put("hostype",i % 3 == 0 ? 1 : i % 3 == 1 ? 2 :4);
             paramMap.put("provinceCode","110000");

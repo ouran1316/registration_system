@@ -13,7 +13,6 @@ public class test {
     @GetMapping("/test")
     public void test() {
         System.out.println("21313132131321312321321");
-        System.out.println("commit1");
-        System.out.println("commit2");
+
     }
 }

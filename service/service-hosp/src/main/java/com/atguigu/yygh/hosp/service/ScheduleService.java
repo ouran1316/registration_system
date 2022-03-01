@@ -1,6 +1,9 @@
 package com.atguigu.yygh.hosp.service;
 
+import com.atguigu.yygh.ScheduleCommonRequest;
+import com.atguigu.yygh.ScheduleResponse;
 import com.atguigu.yygh.model.hosp.Schedule;
+import com.atguigu.yygh.model.hosp.ScheduleDocResponse;
 import com.atguigu.yygh.vo.hosp.ScheduleOrderVo;
 import com.atguigu.yygh.vo.hosp.ScheduleQueryVo;
 import org.springframework.data.domain.Page;
@@ -29,15 +32,21 @@ public interface ScheduleService {
     //根据医院编号 、科室编号和工作日期，查询排班详细信息
     List<Schedule> getDetailSchedule(String hoscode, String depcode, String workDate);
 
+    // 根据医院编号 、科室编号、工作日期和场地号，查询排班详细信息
+    public List<Schedule> getDetailSchedule2(String hoscode, String depcode, String workDate, String docName);
+
     //获取可预约排班数据
     Map<String, Object> getBookingScheduleRule(Integer page, Integer limit, String hoscode, String depcode);
 
     //根据排班id获取排班详细数据
     Schedule getScheduleId(String scheduleId);
 
-    //根据排班id获取预约下单数据
+    // 根据排班id获取预约下单数据
     ScheduleOrderVo getScheduleOrderVo(String scheduleId);
 
     //更新排班数据 用于 mq
     void update(Schedule schedule);
+
+    // 获取指定日期可用球场
+    public ScheduleResponse<ScheduleDocResponse> getDocName(ScheduleCommonRequest request);
 }

@@ -33,19 +33,19 @@ public class OrderInfo extends BaseEntity {
 	@TableField("out_trade_no")
 	private String outTradeNo;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@TableField("hoscode")
 	private String hoscode;
 
-	@ApiModelProperty(value = "医院名称")
+	@ApiModelProperty(value = "单位名称")
 	@TableField("hosname")
 	private String hosname;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	@TableField("depcode")
 	private String depcode;
 
-	@ApiModelProperty(value = "科室名称")
+	@ApiModelProperty(value = "场地")
 	@TableField("depname")
 	private String depname;
 
@@ -53,7 +53,7 @@ public class OrderInfo extends BaseEntity {
 	@TableField("schedule_id")
 	private String scheduleId;
 
-	@ApiModelProperty(value = "医生职称")
+	@ApiModelProperty(value = "场馆")
 	@TableField("title")
 	private String title;
 
@@ -107,5 +107,16 @@ public class OrderInfo extends BaseEntity {
 	@TableField("order_status")
 	private Integer orderStatus;
 
+	@ApiModelProperty(value = "联系人名称")
+	@TableField("name")
+	private String name;
+
+	@ApiModelProperty(value = "联系人邮箱")
+	@TableField("phone")
+	private String phone;
+
+	@ApiModelProperty(value = "联系人性别，0女，1男")
+	@TableField("sex")
+	private Integer sex;
 }
 

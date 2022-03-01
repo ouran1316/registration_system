@@ -14,8 +14,13 @@ public class OrderCountQueryVo {
 	@ApiModelProperty(value = "医院名称")
 	private String hosname;
 
-	@ApiModelProperty(value = "安排日期")
+	@ApiModelProperty(value = "用户id")
+	private Long userId;
+
+	@ApiModelProperty(value = "查询起始日期")
 	private String reserveDateBegin;
+
+	@ApiModelProperty(value = "查询结束日志")
 	private String reserveDateEnd;
 
 }
