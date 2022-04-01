@@ -4,10 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.atguigu.hospital.mapper.UserMapper;
 import com.atguigu.hospital.model.UserInfo;
 import com.atguigu.hospital.service.UserService;
-import com.atguigu.hospital.util.HttpRequestHelper;
-import com.atguigu.hospital.util.MD5;
-import com.atguigu.hospital.util.ResultCodeEnum;
-import com.atguigu.hospital.util.YyghException;
+import com.atguigu.hospital.util.*;
 import com.google.common.collect.Maps;
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +23,6 @@ import java.util.Map;
 @Service
 public class UserServiceImpl implements UserService {
 
-    public final static String apiUrl = "http://localhost";
-
-
     @Override
     public Boolean userLogin(String userName, String password) {
         if (StringUtils.isBlank(userName) || StringUtils.isBlank(password)) {
@@ -40,7 +34,7 @@ public class UserServiceImpl implements UserService {
             paramsMap.put("user_name", userName);
             paramsMap.put("password", password);
             respone = HttpRequestHelper.sendRequest(
-                    paramsMap,apiUrl + "/admin/administrators/administratorsLogin");
+                    paramsMap, CommonConstant.apiUrl + "/admin/administrators/administratorsLogin");
         } catch (Exception e) {
             log.error("UserServiceImpl userLogin selectByMap error", e);
             return false;

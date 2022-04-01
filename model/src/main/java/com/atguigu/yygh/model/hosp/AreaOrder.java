@@ -23,12 +23,12 @@ public class AreaOrder {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "医院编号，学校编号")
+    @ApiModelProperty(value = "单位编号，学校编号")
     // 唯一索引
     @Indexed(unique = true)
     private String hoscode;
 
-    @ApiModelProperty(value = "医院名称，学校名称")
+    @ApiModelProperty(value = "单位名称，学校名称")
     // 普通索引
     @Indexed
     private String hosname;
@@ -42,11 +42,11 @@ public class AreaOrder {
     @ApiModelProperty(value = "擅长技能，场地可用时间")
     private String skill;
 
-    @ApiModelProperty(value = "排班日期，具体到日")
+    @ApiModelProperty(value = "排期日期，具体到日")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "Asia/Shanghai")
     private Date workDate;
 
-    @ApiModelProperty(value = "排班时间（0：上午 1：下午）")
+    @ApiModelProperty(value = "排期时间（0：上午 1：下午）")
     private Integer workTime;
 
     @ApiModelProperty(value = "可预约数")
@@ -58,10 +58,10 @@ public class AreaOrder {
     @ApiModelProperty(value = "挂号费，场地费")
     private BigDecimal amount;
 
-    @ApiModelProperty(value = "排班状态（-1：场地维修 0：已约 1：可约）")
+    @ApiModelProperty(value = "排期状态（-1：场地维修 0：已约 1：可约）")
     private Integer status;
 
-    @ApiModelProperty(value = "排班编号（医院自己的排班主键）")
+    @ApiModelProperty(value = "排期编号（单位自己的排期主键）")
     @Indexed //普通索引
     private String hosScheduleId;
 }

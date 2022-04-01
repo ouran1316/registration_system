@@ -2,6 +2,7 @@ package com.atguigu.yygh.common.helper;
 
 import com.alibaba.excel.util.StringUtils;
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
 
@@ -10,6 +11,7 @@ import java.util.Date;
  * @Version 1.0
  * @Date 2021/5/25 15:35
  */
+@Slf4j
 public class JwtHelper {
 
     //过期时间
@@ -33,7 +35,9 @@ public class JwtHelper {
     //根据 token 得到用户 id
     //如果 token 已经过期这里还获取会报500
     public static Long getUserId(String token) {
-        if(StringUtils.isEmpty(token)) return null;
+        if(StringUtils.isEmpty(token) || tokenTimeOut(token)) {
+            return null;
+        }
         Integer userId;
         try {
             Jws<Claims> claimsJws = Jwts.parser().setSigningKey(tokenSignKey).parseClaimsJws(token);
@@ -48,15 +52,36 @@ public class JwtHelper {
     //根据 token 获取 username
     //如果 token 已经过期这里还获取会报500
     public static String getUserName(String token) {
-        if(StringUtils.isEmpty(token)) return "";
+        if(StringUtils.isEmpty(token) || tokenTimeOut(token)) return "";
         Jws<Claims> claimsJws
                 = Jwts.parser().setSigningKey(tokenSignKey).parseClaimsJws(token);
         Claims claims = claimsJws.getBody();
         return (String)claims.get("userName");
     }
 
-    //判断 token 是否已经过期
-
+    /**
+     * 判断 token 是否已经过期
+     * @param token
+     * @return true：超时了，false：未超时
+     */
+    public static Boolean tokenTimeOut(String token) {
+        if(StringUtils.isEmpty(token)) {
+            return true;
+        }
+        try {
+            Jws<Claims> claimsJws = Jwts.parser().setSigningKey(tokenSignKey).parseClaimsJws(token);
+            Claims claims = claimsJws.getBody();
+            Date tokenDate = claims.getExpiration();
+            Date now = new Date();
+            if (now.compareTo(tokenDate) > 0) {
+                return true;
+            }
+        } catch (Exception e) {
+            log.error("com/atguigu/yygh/common/helper/JwtHelper.java#toeknTimeOut#fatal", e);
+            return true;
+        }
+        return false;
+    }
 
     public static void main(String[] args) {
         String token = JwtHelper.createToken(1L, "ouran");

@@ -20,14 +20,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class HospitalSetServiceImpl extends ServiceImpl<HospitalSetMapper, HospitalSet> implements HospitalSetService {
 
-    //根据传递过来的医院编码，查询数据库，查询签名
+    //根据传递过来的单位编码，查询数据库，查询签名
     @Override
     public String getSignKey(String hoscode) {
         return baseMapper.selectOne(new QueryWrapper<HospitalSet>()
                 .eq("hoscode", hoscode)).getSignKey();
     }
 
-    //获取医院签名信息
+    //获取单位签名信息
     @Override
     public SignInfoVo getSignInfoVo(String hoscode) {
         HospitalSet hospitalSet = baseMapper.selectOne(new QueryWrapper<HospitalSet>()

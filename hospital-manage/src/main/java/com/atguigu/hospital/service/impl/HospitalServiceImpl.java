@@ -69,7 +69,6 @@ public class HospitalServiceImpl implements HospitalService {
             //这里高并发会有多线程安全隐患，应该要增加 where aviableNumber = x，增加行锁
             scheduleMapper.updateById(schedule);
 
-
             //记录预约记录
             OrderInfo orderInfo = new OrderInfo();
             orderInfo.setPatientId(patientId);
@@ -86,20 +85,20 @@ public class HospitalServiceImpl implements HospitalService {
 
             resultMap.put("resultCode","0000");
             resultMap.put("resultMsg","预约成功");
-            //预约记录唯一标识（医院预约记录主键）
+            //预约记录唯一标识（单位预约记录主键）
             resultMap.put("hosRecordId", orderInfo.getId());
             //预约号序
             resultMap.put("number", number);
             //取号时间
-            resultMap.put("fetchTime", reserveDate + "09:00前");;
+            resultMap.put("fetchTime", reserveDate + "09:00前");
             //取号地址
-            resultMap.put("fetchAddress", "一层114窗口");;
-            //排班可预约数
+            resultMap.put("fetchAddress", "一层114窗口");
+            //排期可预约数
             resultMap.put("reservedNumber", schedule.getReservedNumber());
-            //排班剩余预约数
+            //排期剩余预约数
             resultMap.put("availableNumber", schedule.getAvailableNumber());
         } else {
-            throw new YyghException(ResultCodeEnum.DATA_ERROR);
+             throw new YyghException(ResultCodeEnum.ORDER_ERROR);
         }
         return resultMap;
     }
@@ -151,7 +150,7 @@ public class HospitalServiceImpl implements HospitalService {
     }
 
     /**
-     * 医院处理就诊人信息
+     * 单位处理就诊人信息
      * @param patient
      */
     private Long savePatient(Patient patient) {

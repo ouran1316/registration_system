@@ -36,7 +36,6 @@ public class ApiAdministratorsController {
         Map<String, Object> paramsMap = HttpRequestHelper.switchMap(parameterMap);
         String userName = (String) paramsMap.get("user_name");
         String password = (String) paramsMap.get("password");
-
         try {
             administratorsService.login(userName, password);
         } catch (Exception e) {
@@ -48,4 +47,22 @@ public class ApiAdministratorsController {
         return Result.ok(userName);
     }
 
+    /**
+     * 获取管理员Hoscode
+     * @param request
+     * @return
+     */
+    @PostMapping("getAdminHoscode")
+    public Result getAdminHoscode(HttpServletRequest request) {
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String, Object> paramsMap = HttpRequestHelper.switchMap(parameterMap);
+        String userName = (String) paramsMap.get("user_name");
+        String hoscode;
+        try {
+            hoscode = administratorsService.getHoscodeByAdminName(userName);
+        } catch (Exception e) {
+            return Result.fail();
+        }
+        return Result.ok(hoscode);
+    }
 }

@@ -30,7 +30,7 @@ spring:
         - id: service-user
           uri: lb://service-user
           predicates:
-            - Path=/*/user/**
+            - Path=/*/user/**,/*/administrators/**
         # 发送邮箱验证码
         - id: service-msm
           uri: lb://service-msm

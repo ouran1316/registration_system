@@ -23,7 +23,7 @@ public class OrderMqVo implements Serializable {
 	@ApiModelProperty(value = "剩余预约数")
 	private Integer availableNumber;
 
-	@ApiModelProperty(value = "排班id")
+	@ApiModelProperty(value = "排期id")
 	private String scheduleId;
 
 	@ApiModelProperty(value = "短信实体")

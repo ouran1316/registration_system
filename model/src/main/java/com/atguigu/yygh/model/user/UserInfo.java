@@ -57,5 +57,9 @@ public class UserInfo extends BaseEntity {
 	@TableField("status")
 	private Integer status;
 
+	@ApiModelProperty(value = "用户密码 md5加密")
+	@TableField("password")
+	private String password;
+
 }
 

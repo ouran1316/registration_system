@@ -15,17 +15,17 @@ import lombok.Data;
  * @author qy
  */
 @Data
-@ApiModel(description = "医院设置")
+@ApiModel(description = "单位设置")
 @TableName("hospital_set")
 public class HospitalSet extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "医院名称")
+	@ApiModelProperty(value = "单位名称")
 	@TableField("hosname")
 	private String hosname;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@TableField("hoscode")
 	private String hoscode;
 

@@ -21,24 +21,24 @@ public class Department extends BaseMongoEntity {
 	
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@Indexed //普通索引
 	private String hoscode;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	@Indexed(unique = true) //唯一索引
 	private String depcode;
 
-	@ApiModelProperty(value = "科室名称")
+	@ApiModelProperty(value = "场地名称")
 	private String depname;
 
-	@ApiModelProperty(value = "科室描述")
+	@ApiModelProperty(value = "场地描述")
 	private String intro;
 
-	@ApiModelProperty(value = "大科室编号")
+	@ApiModelProperty(value = "大场地编号")
 	private String bigcode;
 
-	@ApiModelProperty(value = "大科室名称")
+	@ApiModelProperty(value = "大场地名称")
 	private String bigname;
 
 }

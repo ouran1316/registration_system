@@ -3,7 +3,7 @@ package com.atguigu.yygh.enums;
 public enum DictEnum {
 
 
-    HOSTYPE("Hostype", "医院等级"),
+    HOSTYPE("Hostype", "单位等级"),
     CERTIFICATES_TYPE("CertificatesType", "证件类型"),
     ;
 

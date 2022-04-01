@@ -10,7 +10,7 @@ import java.util.List;
 @ApiModel(description = "Department")
 public class DepartmentVo {
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	private String depcode;
 
 	@ApiModelProperty(value = "场地")

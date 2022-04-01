@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @Version 1.0
  * @Date 2022/2/10 18:04
  *
- * 排班静态数据
+ * 排期静态数据
  */
 public class ScheduleConstant {
 

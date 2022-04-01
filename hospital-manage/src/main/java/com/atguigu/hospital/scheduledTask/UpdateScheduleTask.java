@@ -16,7 +16,7 @@ import java.util.Date;
  * @Author ouran
  * @Version 1.0
  * @Date 2022/2/24 17:37
- * 定时更新排班信息
+ * 定时更新排期信息
  */
 @Component
 @EnableScheduling
@@ -27,7 +27,7 @@ public class UpdateScheduleTask {
 
     @Scheduled(cron = "20 52 09 * * ?")
     public void taskPatient() throws ParseException {
-        // 每天晚上11点55分更新一次排班数据，转成mysql的时间格式
+        // 每天晚上11点55分更新一次排期数据，转成mysql的时间格式
         String workDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         rabbitService.sendMessage(MqConst.EXCHANGE_DIRECT_UPDATE_SCHEDULE, MqConst.ROUTING_UPDATE_SCHEDULE_8, workDate);
     }

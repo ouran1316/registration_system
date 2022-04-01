@@ -1,6 +1,7 @@
 package com.atguigu.hospital.controller;
 
 
+import io.micrometer.core.instrument.util.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -29,7 +30,10 @@ public class IndexController {
 	 */
 	@RequestMapping(value = "/")
 	public String index(ModelMap model, HttpServletRequest request) {
-
+		String userName = (String) request.getSession().getAttribute("user_name");
+		if (StringUtils.isBlank(userName)) {
+			return PAGE_LOGIN;
+		}
 		return PAGE_INDEX;
 	}
 
@@ -39,7 +43,6 @@ public class IndexController {
 	 */
 	@RequestMapping(value = "/main",method = RequestMethod.GET)
 	public String main() {
-
 		return PAGE_MAIN;
 	}
 

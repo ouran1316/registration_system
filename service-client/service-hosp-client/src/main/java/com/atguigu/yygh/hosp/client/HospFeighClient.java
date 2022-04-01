@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public interface HospFeighClient {
 
     /**
-     * 根据排班id获取预约下单数据
+     * 根据排期id获取预约下单数据
      * @param scheduleId
      * @return
      */
@@ -29,7 +29,7 @@ public interface HospFeighClient {
     public ScheduleOrderVo getScheduleOrderVo(@PathVariable("scheduleId") String scheduleId);
 
     /**
-     * 根据排班id获取排班详细数据
+     * 根据排期id获取排期详细数据
      * @param scheduleId
      * @return
      */
@@ -37,7 +37,7 @@ public interface HospFeighClient {
     public Result<Schedule> getSchedule(@PathVariable("scheduleId") String scheduleId);
 
     /**
-     * 获取医院签名信息
+     * 获取单位签名信息
      * @param hoscode
      * @return
      */

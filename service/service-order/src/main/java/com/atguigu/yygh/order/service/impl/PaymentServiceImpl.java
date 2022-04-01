@@ -85,7 +85,7 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, PaymentInfo> 
         orderInfo.setOrderStatus(OrderStatusEnum.PAID.getStatus());
         orderService.updateById(orderInfo);
 
-        //5 调用医院接口，更新订单支付信息
+        //5 调用单位接口，更新订单支付信息
         SignInfoVo signInfoVo = hospitalFeignClient.getSignInfoVo(orderInfo.getHoscode());
         Map<String,Object> reqMap = new HashMap<>();
         reqMap.put("hoscode",orderInfo.getHoscode());
@@ -103,7 +103,7 @@ public class PaymentServiceImpl extends ServiceImpl<PaymentMapper, PaymentInfo> 
         orderInfo.setOrderStatus(OrderStatusEnum.PAID.getStatus());
         orderService.updateById(orderInfo);
 
-        // 调用医院接口，更新订单支付信息
+        // 调用单位接口，更新订单支付信息
         SignInfoVo signInfoVo = hospitalFeignClient.getSignInfoVo(orderInfo.getHoscode());
         Map<String,Object> reqMap = new HashMap<>();
         reqMap.put("hoscode",orderInfo.getHoscode());

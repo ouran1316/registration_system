@@ -1,12 +1,15 @@
 package com.atguigu.yygh.user.client;
 
 import com.atguigu.yygh.model.user.Patient;
+import com.atguigu.yygh.model.user.UserInfo;
 import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Author ouran
@@ -23,4 +26,12 @@ public interface PatientFeignClient {
      */
     @GetMapping("/api/user/patient/inner/get/{id}")
     Patient getPatientOrder(@PathVariable("id") Long id);
+
+    /**
+     * 获取用户信息
+     * @param userId
+     * @return
+     */
+    @GetMapping("/admin/user/getUserInfo")
+    UserInfo getUserInfo(Long userId);
 }

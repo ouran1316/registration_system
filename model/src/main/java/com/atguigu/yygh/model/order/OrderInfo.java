@@ -49,7 +49,7 @@ public class OrderInfo extends BaseEntity {
 	@TableField("depname")
 	private String depname;
 
-	@ApiModelProperty(value = "排班id")
+	@ApiModelProperty(value = "排期id")
 	@TableField("schedule_id")
 	private String scheduleId;
 
@@ -78,7 +78,7 @@ public class OrderInfo extends BaseEntity {
 	@TableField("patient_phone")
 	private String patientPhone;
 
-	@ApiModelProperty(value = "预约记录唯一标识（医院预约记录主键）")
+	@ApiModelProperty(value = "预约记录唯一标识（单位预约记录主键）")
 	@TableField("hos_record_id")
 	private String hosRecordId;
 

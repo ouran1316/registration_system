@@ -15,7 +15,7 @@ import java.util.Date;
  * @author qy
  */
 @Data
-@ApiModel(description = "可预约排班规则数据")
+@ApiModel(description = "可预约排期规则数据")
 public class BookingScheduleRuleVo {
 	
 	@ApiModelProperty(value = "可预约日期")
@@ -32,10 +32,10 @@ public class BookingScheduleRuleVo {
 	@ApiModelProperty(value = "就诊医生人数")
 	private Integer docCount;
 
-	@ApiModelProperty(value = "科室可预约数")
+	@ApiModelProperty(value = "场地可预约数")
 	private Integer reservedNumber;
 
-	@ApiModelProperty(value = "科室剩余预约数")
+	@ApiModelProperty(value = "场地剩余预约数")
 	private Integer availableNumber;
 
 	@ApiModelProperty(value = "状态 0：正常 1：即将放号 -1：当天已停止挂号")

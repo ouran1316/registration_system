@@ -1,6 +1,7 @@
 package com.atguigu.yygh.hosp.controller.api;
 
 import com.alibaba.excel.util.StringUtils;
+import com.alibaba.fastjson.JSONObject;
 import com.atguigu.yygh.common.exception.HospitalException;
 import com.atguigu.yygh.common.helper.HttpRequestHelper;
 import com.atguigu.yygh.common.result.Result;
@@ -12,6 +13,7 @@ import com.atguigu.yygh.hosp.service.HospitalSetService;
 import com.atguigu.yygh.hosp.service.ScheduleService;
 import com.atguigu.yygh.model.hosp.Department;
 import com.atguigu.yygh.model.hosp.Hospital;
+import com.atguigu.yygh.model.hosp.PageModel;
 import com.atguigu.yygh.model.hosp.Schedule;
 import com.atguigu.yygh.vo.hosp.ScheduleQueryVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,13 +46,13 @@ public class ApiController {
     @Autowired
     private ScheduleService scheduleService;
 
-    //删除排班
+    //删除排期
     @PostMapping("schedule/remove")
     public Result remove(HttpServletRequest request) {
-        //获取传递过来科室信息
+        //获取传递过来场地信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
-        //获取医院编号和排班编号
+        //获取单位编号和排期编号
         String hoscode = (String)paramMap.get("hoscode");
         String hosScheduleId = (String)paramMap.get("hosScheduleId");
 
@@ -60,17 +62,17 @@ public class ApiController {
         return Result.ok();
     }
 
-    //查询排班接口
+    //查询排期接口
     @PostMapping("/schedule/list")
     public Result findSchedule(HttpServletRequest request) {
-        //获取传递过来科室信息
+        //获取传递过来场地信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
 
-        //医院编号
+        //单位编号
         String hoscode = (String)paramMap.get("hoscode");
 
-        //科室编号
+        //场地编号
         String depcode = (String)paramMap.get("depcode");
         //当前页 和 每页记录数
         int page = StringUtils.isEmpty(paramMap.get("page")) ? 1 : Integer.parseInt((String)paramMap.get("page"));
@@ -81,14 +83,16 @@ public class ApiController {
         scheduleQueryVo.setHoscode(hoscode);
         scheduleQueryVo.setDepcode(depcode);
         //调用service方法
-        Page<Schedule> pageModel = scheduleService.findPageSchedule(page,limit,scheduleQueryVo);
-        return Result.ok(pageModel);
+//        Page<Schedule> pageModel = scheduleService.findPageSchedule(page,limit,scheduleQueryVo);
+        PageModel<Schedule> pageSchedule = scheduleService.findPageSchedule(page, limit, scheduleQueryVo);
+
+        return Result.ok(pageSchedule);
     }
 
-    //上传排班接口
+    //上传排期接口
     @PostMapping("/saveSchedule")
     public Result saveSchedule(HttpServletRequest request) {
-        //获取传递过来科室信息
+        //获取传递过来场地信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
 
@@ -97,13 +101,29 @@ public class ApiController {
         return Result.ok();
     }
 
-    //删除科室接口
-    @PostMapping("/department/remove")
-    public Result removeDepartment(HttpServletRequest request) {
-        //获取传递过来科室信息
+    @PostMapping("/updateSchedule")
+    public Result updateSchedule(HttpServletRequest request) {
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
-        //医院编号 和 科室编号
+        String paramMapString = JSONObject.toJSONString(paramMap);
+        Schedule schedule = JSONObject.parseObject(paramMapString, Schedule.class);
+        try {
+            scheduleService.updateSchedule(schedule);
+        } catch (Exception e) {
+            if (e instanceof HospitalException) {
+                return Result.fail();
+            }
+        }
+        return Result.ok();
+    }
+
+    //删除场地接口
+    @PostMapping("/department/remove")
+    public Result removeDepartment(HttpServletRequest request) {
+        //获取传递过来场地信息
+        Map<String, String[]> requestMap = request.getParameterMap();
+        Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
+        //单位编号 和 场地编号
         String hoscode = (String)paramMap.get("hoscode");
         String depcode = (String)paramMap.get("depcode");
         //TODO 签名校验
@@ -111,14 +131,14 @@ public class ApiController {
         return Result.ok();
     }
 
-    //查询科室接口
+    //查询场地接口
     @PostMapping("/department/list")
     public Result findDepartment(HttpServletRequest request) {
-        //获取传递过来科室信息
+        //获取传递过来场地信息
         Map<String, String[]> parameterMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(parameterMap);
 
-        //医院编号
+        //单位编号
         String hoscode = (String)paramMap.get("hoscode");
         //当前页 和 每页记录数
         int page = StringUtils.isEmpty(paramMap.get("page")) ? 1 : Integer.parseInt((String)paramMap.get("page"));
@@ -132,19 +152,19 @@ public class ApiController {
         return Result.ok(pageModel);
     }
 
-    //上传科室接口
+    //上传场地接口
     @PostMapping("/saveDepartment")
     public Result saveDepartment(HttpServletRequest request) {
-        //获取传递过来科室信息
+        //获取传递过来场地信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
 
-        //获取医院编号
+        //获取单位编号
         String hoscode = (String)paramMap.get("hoscode");
-        //1 获取医院系统传递过来的签名,签名进行MD5加密
+        //1 获取单位系统传递过来的签名,签名进行MD5加密
         String hospSign = (String)paramMap.get("sign");
 
-        //2 根据传递过来医院编码，查询数据库，查询签名
+        //2 根据传递过来单位编码，查询数据库，查询签名
         String signKey = hospitalSetService.getSignKey(hoscode);
 
         //3 把数据库查询签名进行MD5加密
@@ -160,18 +180,18 @@ public class ApiController {
         return Result.ok();
     }
 
-    //查询医院
+    //查询单位
     @PostMapping("hospital/show")
     public Result getHospital(HttpServletRequest request) {
-        //获取传递过来医院信息
+        //获取传递过来单位信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
-        //获取医院编号
+        //获取单位编号
         String hoscode = (String)paramMap.get("hoscode");
-        //1 获取医院系统传递过来的签名,签名进行MD5加密
+        //1 获取单位系统传递过来的签名,签名进行MD5加密
         String hospSign = (String)paramMap.get("sign");
 
-        //2 根据传递过来医院编码，查询数据库，查询签名
+        //2 根据传递过来单位编码，查询数据库，查询签名
         String signKey = hospitalSetService.getSignKey(hoscode);
 
         //3 把数据库查询签名进行MD5加密
@@ -182,23 +202,23 @@ public class ApiController {
             throw new HospitalException(ResultCodeEnum.SIGN_ERROR);
         }
 
-        //调用service方法实现根据医院编号查询
+        //调用service方法实现根据单位编号查询
         Hospital hospital = hospitalService.getByHoscode(hoscode);
         return Result.ok(hospital);
     }
 
-    //上传医院接口
+    //上传单位接口
     @PostMapping("/saveHospital")
     public Result saveHosp(HttpServletRequest request) {
-        //获取传递过来的医院信息
+        //获取传递过来的单位信息
         Map<String, String[]> requestMap = request.getParameterMap();
         Map<String, Object> paramMap = HttpRequestHelper.switchMap(requestMap);
 
-        //1 获取医院系统传递过来的签名，签名进行了MD5加密
+        //1 获取单位系统传递过来的签名，签名进行了MD5加密
         String hospSign = (String) paramMap.get("sign");
 
 
-        //2 根据传递过来的医院编码，查询数据库，查询签名
+        //2 根据传递过来的单位编码，查询数据库，查询签名
         String hoscode = (String) paramMap.get("hoscode");
         String signKey = hospitalSetService.getSignKey(hoscode);
 
@@ -216,7 +236,6 @@ public class ApiController {
             String logoData = logoDataString.replaceAll(" ", "+");
             paramMap.put("logoData", logoData);
         }
-
 
         //调用 service 的方法
         hospitalService.save(paramMap);

@@ -20,12 +20,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin/hosp/hospital")
 //@CrossOrigin
-public class HospitalController {
+public abstract class HospitalController {
 
     @Autowired
     HospitalService hospitalService;
 
-    //医院列表(条件查询分页)
+    //单位列表(条件查询分页)
     @GetMapping("/list/{page}/{limit}")
     public Result listHosp(@PathVariable Integer page,
                            @PathVariable Integer limit,
@@ -37,16 +37,16 @@ public class HospitalController {
         return Result.ok(pageModel);
     }
 
-    //更新医院上线状态
-    @ApiOperation(value = "更新医院上线状态")
+    //更新单位上线状态
+    @ApiOperation(value = "更新单位上线状态")
     @GetMapping("updateHospStatus/{id}/{status}")
     public Result updateHospStatus(@PathVariable String id, @PathVariable Integer status) {
         hospitalService.updateStatus(id, status);
         return Result.ok();
     }
 
-    //医院详情信息
-    @ApiOperation(value = "医院详情信息")
+    //单位详情信息
+    @ApiOperation(value = "单位详情信息")
     @GetMapping("showHospDetail/{id}")
     public Result showHospDetail(@PathVariable String id) {
         Map<String, Object> map = hospitalService.getHospById(id);

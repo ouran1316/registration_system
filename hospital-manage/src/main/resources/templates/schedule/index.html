@@ -23,17 +23,17 @@
                             <thead>
                             <tr>
                                 <th style="width: 20px">序号</th>
-                                <th>医院编号</th>
-                                <th>科室编号</th>
-                                <th>职称 </th>
-                                <th>医生名称 </th>
-                                <th>安排日期</th>
-                                <th>安排时间</th>
+                                <th>单位编号</th>
+                                <th>场地编号</th>
+                                <th>场馆 </th>
+                                <th>场地号 </th>
+                                <th>日期</th>
+<!--                                <th>安排时间</th>-->
                                 <th>可预约数</th>
                                 <th>剩余预约数</th>
-                                <th>挂号费</th>
-                                <th>排班编号</th>
-                                <th>擅长技能</th>
+                                <th>费用</th>
+<!--                                <th>排期编号</th>-->
+                                <th>时间段</th>
                                 <th>操作 </th>
                             </tr>
                             </thead>
@@ -45,13 +45,21 @@
                                 <td th:text="${item.title}">22</td>
                                 <td th:text="${item.docname}">22</td>
                                 <td th:text="${item.workDate}">33</td>
-                                <td th:text="${item.workTime}">33</td>
+<!--                                <td th:text="${item.workTime}">33</td>-->
                                 <td th:text="${item.reservedNumber}">33</td>
                                 <td th:text="${item.availableNumber}">33</td>
                                 <td th:text="${item.amount}">33</td>
-                                <td th:text="${item.hosScheduleId}">33</td>
+<!--                                <td th:text="${item.hosScheduleId}">33</td>-->
                                 <td th:text="${item.skill}">33</td>
                                 <td class="text-center">
+                                    <a class="update"
+                                       th:attr="data-hosScheduleId=${item.hosScheduleId},
+                                       data-index=${it.index},
+                                       data-reservedNumber=${item.reservedNumber},
+                                       data-amount=${item.amount},
+                                       data-skill=${item.skill}">
+                                        修改
+                                    </a>
                                     <a class="delete" th:attr="data-hosScheduleId=${item.hosScheduleId}">删除</a>
                                 </td>
                             </tr>
@@ -100,6 +108,18 @@ var app = new Vue({
             opt.confirm('/schedule/remove/'+hosScheduleId);
         });
     });
+    $(function() {
+        $(".update").on("click", function () {
+            var hosScheduleId = $(this).attr("data-hosScheduleId");
+            var index = $(this).attr("data-index");
+            var reservedNumber = $(this).attr("data-reservedNumber");
+            var amount = $(this).attr("data-amount");
+            var skill = $(this).attr("data-skill");
+            opt.openWin('/schedule/update/' + hosScheduleId + '/' + index
+                + "/" + reservedNumber + '/' + amount + '/' + skill,
+                '修改', 550, 450);
+        })
+    })
 </script>
 </body>
 </html>

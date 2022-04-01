@@ -54,11 +54,22 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
         //获取就诊人信息
         // Patient patient = patientFeignClient.getPatientOrder(patientId);
 
-        //获取排班信息
+        //获取排期信息
         ScheduleOrderVo scheduleOrderVo = hospFeighClient.getScheduleOrderVo(scheduleId);
 
         //判断当前时间是否还可以预约
         // todo 这里时间的判断规则需要修改，目前是没有对时间判断，什么时候都可以下单
+        Schedule schedule = hospFeighClient.getSchedule(scheduleId).getData();
+        String[] date = new SimpleDateFormat("yyyy-MM-dd#HH：mm").format(new Date()).split("#");
+        String areaValidTime = schedule.getSkill().split("-")[0].trim();
+        if (areaValidTime.split("：")[0].length() < 2) {
+            areaValidTime = "0" + areaValidTime;
+        }
+        if (schedule.getWorkDate().toString().compareTo(date[0]) < 0
+                || (schedule.getWorkDate().toString().compareTo(date[0]) == 0
+                && areaValidTime.compareTo(date[1]) < 0)) {
+            throw new HospitalException(ResultCodeEnum.CANCEL_ORDER_NO);
+        }
 
 //        if (new DateTime(scheduleOrderVo.getStartTime()).isAfterNow()
 //                || new DateTime(scheduleOrderVo.getEndTime()).isBeforeNow()) {
@@ -87,8 +98,8 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
         orderInfo.setOrderStatus(OrderStatusEnum.UNPAID.getStatus());
         baseMapper.insert(orderInfo);
 
-        //调用医院接口，实现预约挂号操作
-        //设置调用医院接口需要参数，参数放到map集合
+        //调用单位接口，实现预约挂号操作
+        //设置调用单位接口需要参数，参数放到map集合
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("hoscode",orderInfo.getHoscode());
         paramMap.put("depcode",orderInfo.getDepcode());
@@ -118,28 +129,28 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
         String sign = HttpRequestHelper.getSign(paramMap, signInfoVo.getSignKey());
         paramMap.put("sign", sign);
 
-        //请求医院系统接口
+        //请求单位系统接口
         JSONObject result = HttpRequestHelper.sendRequest(paramMap, signInfoVo.getApiUrl() + "/order/submitOrder");
 
         if(result.getInteger("code") == 200) {
             JSONObject jsonObject = result.getJSONObject("data");
-            //预约记录唯一标识（医院预约记录主键）
+            //预约记录唯一标识（单位预约记录主键）
             String hosRecordId = jsonObject.getString("hosRecordId");
             //预约序号
-            Integer number = jsonObject.getInteger("number");;
+            Integer number = jsonObject.getInteger("number");
             //取号时间
-            String fetchTime = jsonObject.getString("fetchTime");;
+            String fetchTime = jsonObject.getString("fetchTime");
             //取号地址
-            String fetchAddress = jsonObject.getString("fetchAddress");;
+            String fetchAddress = jsonObject.getString("fetchAddress");
             //更新订单
             orderInfo.setHosRecordId(hosRecordId);
             orderInfo.setNumber(number);
             orderInfo.setFetchTime(fetchTime);
             orderInfo.setFetchAddress(fetchAddress);
             baseMapper.updateById(orderInfo);
-            //排班可预约数
+            //排期可预约数
             Integer reservedNumber = jsonObject.getInteger("reservedNumber");
-            //排班剩余预约数
+            //排期剩余预约数
             Integer availableNumber = jsonObject.getInteger("availableNumber");
             //发送mq消息，号源更新和短信通知
             //发送mq信息更新号源
@@ -237,8 +248,8 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
 //            throw new HospitalException(ResultCodeEnum.CANCEL_ORDER_NO);
 //        }
 
-        //调用医院接口实现预约取消
-        //根据医院接口返回数据，判断是否做退款操作
+        //调用单位接口实现预约取消
+        //根据单位接口返回数据，判断是否做退款操作
         SignInfoVo signInfoVo = hospFeighClient.getSignInfoVo(orderInfo.getHoscode());
         if(null == signInfoVo) {
             throw new HospitalException(ResultCodeEnum.PARAM_ERROR);
@@ -254,7 +265,7 @@ public class OrderSereviceImpl extends ServiceImpl<OrderMapper, OrderInfo> imple
         JSONObject result = HttpRequestHelper.sendRequest(reqMap,
                 signInfoVo.getApiUrl()+"/order/updateCancelStatus");
 
-        //根据医院接口返回数据
+        //根据单位接口返回数据
         if(result.getInteger("code") != 200) {
             throw new HospitalException(result.getString("message"), ResultCodeEnum.FAIL.getCode());
         } else {

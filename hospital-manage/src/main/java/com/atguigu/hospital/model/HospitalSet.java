@@ -21,7 +21,7 @@ public class HospitalSet extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	private String hoscode;
 
 	@ApiModelProperty(value = "签名秘钥")

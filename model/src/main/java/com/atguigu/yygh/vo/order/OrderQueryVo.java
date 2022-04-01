@@ -21,7 +21,7 @@ public class OrderQueryVo {
 	@ApiModelProperty(value = "就诊人")
 	private String patientName;
 
-	@ApiModelProperty(value = "医院名称")
+	@ApiModelProperty(value = "单位名称")
 	private String keyword;
 
 	@ApiModelProperty(value = "订单状态")

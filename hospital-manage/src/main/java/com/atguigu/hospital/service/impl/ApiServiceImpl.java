@@ -7,10 +7,9 @@ import com.atguigu.hospital.mapper.ScheduleMapper;
 import com.atguigu.hospital.model.HospitalSet;
 import com.atguigu.hospital.model.Schedule;
 import com.atguigu.hospital.service.ApiService;
-import com.atguigu.hospital.util.BeanUtils;
-import com.atguigu.hospital.util.HttpRequestHelper;
-import com.atguigu.hospital.util.MD5;
-import com.atguigu.hospital.util.YyghException;
+import com.atguigu.hospital.util.*;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,30 +46,25 @@ public class ApiServiceImpl implements ApiService {
     private Resource hospitalResource;
 
     @Override
-    public String getHoscode() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
-        return hospitalSet.getHoscode();
-    }
-
-    @Override
     public String getSignKey() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
+        HospitalSet hospitalSet = hospitalSetMapper.selectOne(new QueryWrapper<HospitalSet>()
+                .eq("hoscode", CommonHolder.getHoscode()));
         return hospitalSet.getSignKey();
     }
 
     public String getApiUrl() {
-        HospitalSet hospitalSet = hospitalSetMapper.selectById(2);
+        HospitalSet hospitalSet = hospitalSetMapper.selectOne(new QueryWrapper<HospitalSet>()
+                .eq("hoscode", CommonHolder.getHoscode()));
         return hospitalSet.getApiUrl();
     }
 
     @Override
     public JSONObject getHospital() {
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode", CommonHolder.getHoscode());
         paramMap.put("timestamp", HttpRequestHelper.getTimestamp());
         paramMap.put("sign", MD5.encrypt(this.getSignKey()));
         JSONObject respone = HttpRequestHelper.sendRequest(paramMap,this.getApiUrl()+"/api/hosp/hospital/show");
-        System.out.println(respone.toJSONString());
         if(null != respone && 200 == respone.getIntValue("code")) {
             JSONObject jsonObject = respone.getJSONObject("data");
             return jsonObject;
@@ -81,7 +75,11 @@ public class ApiServiceImpl implements ApiService {
     @Override
     public boolean saveHospital(String data) {
         JSONObject jsonObject = JSONObject.parseObject(data);
-
+        // 校验 hoscode 权限
+        String hoscode = CommonHolder.getHoscode();
+        if (jsonObject.getString("hoscode") == null || !hoscode.equals(jsonObject.getString("hoscode"))) {
+            throw new YyghException(ResultCodeEnum.USER_NOT_AUTHENTICATE);
+        }
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("hoscode",jsonObject.getString("hoscode"));
         paramMap.put("hosname",jsonObject.getString("hosname"));
@@ -102,7 +100,6 @@ public class ApiServiceImpl implements ApiService {
         paramMap.put("sign", MD5.encrypt(this.getSignKey()));
 
         JSONObject respone = HttpRequestHelper.sendRequest(paramMap,this.getApiUrl()+"/api/hosp/saveHospital");
-        System.out.println(respone.toJSONString());
 
         if(null != respone && 200 == respone.getIntValue("code")) {
             return true;
@@ -116,7 +113,7 @@ public class ApiServiceImpl implements ApiService {
         Map<String, Object> result = new HashMap();
 
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode",CommonHolder.getHoscode());
         //paramMap.put("depcode",depcode);
         paramMap.put("page",pageNum);
         paramMap.put("limit",pageSize);
@@ -148,6 +145,12 @@ public class ApiServiceImpl implements ApiService {
         for(int i=0, len=jsonArray.size(); i<len; i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
+            String hoscode = CommonHolder.getHoscode();
+            if (jsonObject.getString("hoscode") == null
+                    || !hoscode.equals(jsonObject.getString("hoscode"))) {
+                throw new YyghException(ResultCodeEnum.USER_NOT_AUTHENTICATE);
+            }
+
             Map<String, Object> paramMap = new HashMap<>();
             paramMap.put("hoscode",jsonObject.getString("hoscode"));
             paramMap.put("depcode",jsonObject.getString("depcode"));
@@ -159,7 +162,6 @@ public class ApiServiceImpl implements ApiService {
             paramMap.put("timestamp", HttpRequestHelper.getTimestamp());
             paramMap.put("sign", MD5.encrypt(this.getSignKey()));
             JSONObject respone = HttpRequestHelper.sendRequest(paramMap,this.getApiUrl()+"/api/hosp/saveDepartment");
-            System.out.println(respone.toJSONString());
 
             if(null == respone || 200 != respone.getIntValue("code")) {
                 throw new YyghException(respone.getString("message"), 201);
@@ -171,7 +173,7 @@ public class ApiServiceImpl implements ApiService {
     @Override
     public boolean removeDepartment(String depcode) {
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode", CommonHolder.getHoscode());
         paramMap.put("depcode",depcode);
         paramMap.put("timestamp", HttpRequestHelper.getTimestamp());
         paramMap.put("sign", HttpRequestHelper.getSign(paramMap, this.getSignKey()));
@@ -188,7 +190,7 @@ public class ApiServiceImpl implements ApiService {
     public Map<String, Object> findSchedule(int pageNum, int pageSize) {
         Map<String, Object> result = new HashMap();
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode", CommonHolder.getHoscode());
         //paramMap.put("depcode",depcode);
         paramMap.put("page",pageNum);
         paramMap.put("limit",pageSize);
@@ -224,6 +226,12 @@ public class ApiServiceImpl implements ApiService {
 //            Long id = jsonObject.getLong("hosScheduleId");
             Schedule schedule = new Schedule();
 //            schedule.setId(id);
+            String hoscode = CommonHolder.getHoscode();
+            if (jsonObject.getString("hoscode") == null
+                    || !hoscode.equals(jsonObject.getString("hoscode"))) {
+                throw new YyghException(ResultCodeEnum.USER_NOT_AUTHENTICATE);
+            }
+
             schedule.setHoscode(jsonObject.getString("hoscode"));
             schedule.setDepcode(jsonObject.getString("depcode"));
             schedule.setTitle(jsonObject.getString("title"));
@@ -246,7 +254,6 @@ public class ApiServiceImpl implements ApiService {
 //            } else {
 //                scheduleMapper.insert(schedule);
 //            }
-
 
             Map<String, Object> paramMap = new HashMap<>();
             paramMap.put("id", scheduleId);
@@ -274,9 +281,44 @@ public class ApiServiceImpl implements ApiService {
     }
 
     @Override
+    public Boolean updateSchedule(String scheduleId, String reversedNumber, String amount, String skill) {
+        if (StringUtils.isBlank(scheduleId) || StringUtils.isBlank(reversedNumber) ||
+                StringUtils.isBlank(amount) || StringUtils.isBlank(skill)) {
+            log.error("com/atguigu/hospital/service/impl/ApiServiceImpl.java updateSchedule param Error");
+            throw new YyghException(ResultCodeEnum.DATA_ERROR);
+        }
+        Integer availableNumber = scheduleMapper.selectById(scheduleId).getAvailableNumber();
+        int reNum = Integer.parseInt(reversedNumber);
+        if (availableNumber > reNum) {
+            availableNumber = reNum;
+        }
+
+        Schedule schedule = new Schedule();
+        schedule.setId(Long.parseLong(scheduleId));
+        schedule.setReservedNumber(reNum);
+        schedule.setAvailableNumber(availableNumber);
+        schedule.setAmount(amount);
+        schedule.setSkill(skill);
+        scheduleMapper.updateById(schedule);
+
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("id", scheduleId);
+        paramMap.put("hoscode", CommonHolder.getHoscode());
+        paramMap.put("availableNumber", availableNumber);
+        paramMap.put("reservedNumber", reNum);
+        paramMap.put("amount", amount);
+        paramMap.put("skill", skill);
+        JSONObject respone = HttpRequestHelper.sendRequest(paramMap,this.getApiUrl() + "/api/hosp/updateSchedule");
+        if(null == respone || 200 != respone.getIntValue("code")) {
+            throw new YyghException(respone.getString("message"), 201);
+        }
+        return true;
+    }
+
+    @Override
     public boolean removeSchedule(String hosScheduleId) {
         Map<String, Object> paramMap = new HashMap<>();
-        paramMap.put("hoscode",this.getHoscode());
+        paramMap.put("hoscode", CommonHolder.getHoscode());
         paramMap.put("hosScheduleId",hosScheduleId);
         paramMap.put("timestamp", HttpRequestHelper.getTimestamp());
         paramMap.put("sign", HttpRequestHelper.getSign(paramMap, this.getSignKey()));
@@ -298,6 +340,11 @@ public class ApiServiceImpl implements ApiService {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             Map<String, Object> paramMap = new HashMap<>();
+            String hoscode = CommonHolder.getHoscode();
+            if (jsonObject.getString("hoscode") == null
+                    || !hoscode.equals(jsonObject.getString("hoscode"))) {
+                throw new YyghException(ResultCodeEnum.USER_NOT_AUTHENTICATE);
+            }
             paramMap.put("hoscode",jsonObject.getString("hoscode"));
             paramMap.put("hosname",jsonObject.getString("hosname"));
             paramMap.put("hostype",i % 3 == 0 ? 1 : i % 3 == 1 ? 2 :4);
@@ -314,13 +361,13 @@ public class ApiServiceImpl implements ApiService {
             }
 
             paramMap.put("address","");
-            String intro = "北京协和医院是集医疗、教学、科研于一体的大型三级甲等综合医院，是国家卫生计生委指定的全国疑难重症诊治指导中心，也是最早承担高干保健和外宾医疗任务的医院之一，以学科齐全、技术力量雄厚、特色专科突出、多学科综合优势强大享誉海内外。在2010、2011、2012、2013、2014年复旦大学医院管理研究所公布的“中国最佳医院排行榜”中连续五年名列榜首。\n" +
+            String intro = "北京协和单位是集医疗、教学、科研于一体的大型三级甲等综合单位，是国家卫生计生委指定的全国疑难重症诊治指导中心，也是最早承担高干保健和外宾医疗任务的单位之一，以学科齐全、技术力量雄厚、特色专科突出、多学科综合优势强大享誉海内外。在2010、2011、2012、2013、2014年复旦大学单位管理研究所公布的“中国最佳单位排行榜”中连续五年名列榜首。\n" +
                     "\n" +
-                    "医院建成于1921年，由洛克菲勒基金会创办。建院之初，就志在“建成亚洲最好的医学中心”。90余年来，医院形成了“严谨、求精、勤奋、奉献”的协和精神和兼容并蓄的特色文化风格，创立了“三基”、“三严”的现代医学教育理念，形成了以“教授、病案、图书馆”著称的协和“三宝”，培养造就了张孝骞、林巧稚等一代医学大师和多位中国现代医学的领军人物，并向全国输送了大批的医学管理人才，创建了当今知名的10余家大型综合及专科医院。2011年在总结90年发展经验的基础上，创新性提出了“待病人如亲人，提高病人满意度；待同事如家人，提高员工幸福感”新办院理念。\n" +
+                    "单位建成于1921年，由洛克菲勒基金会创办。建院之初，就志在“建成亚洲最好的医学中心”。90余年来，单位形成了“严谨、求精、勤奋、奉献”的协和精神和兼容并蓄的特色文化风格，创立了“三基”、“三严”的现代医学教育理念，形成了以“教授、病案、图书馆”著称的协和“三宝”，培养造就了张孝骞、林巧稚等一代医学大师和多位中国现代医学的领军人物，并向全国输送了大批的医学管理人才，创建了当今知名的10余家大型综合及专科单位。2011年在总结90年发展经验的基础上，创新性提出了“待病人如亲人，提高病人满意度；待同事如家人，提高员工幸福感”新办院理念。\n" +
                     "\n" +
-                    "目前，医院共有2个院区、总建筑面积53万平方米，在职职工4000余名、两院院士5人、临床和医技科室53个、国家级重点学科20个、国家临床重点专科29个、博士点16个、硕士点29个、国家级继续医学教育基地6个、二级学科住院医师培养基地18个、三级学科专科医师培养基地15个。开放住院床位2000余张，单日最高门诊量约1.5万人次、年出院病人约8万余人次。被评为“全国文明单位”、“全国创先争优先进基层党组织”、“全国卫生系统先进集体”、“首都卫生系统文明单位”、“最受欢迎三甲医院”，荣获全国五一劳动奖章。同时，医院还承担着支援老少边穷地区、国家重要活动和突发事件主力医疗队的重任，在2008年北京奥运工作中荣获“特别贡献奖”。\n" +
+                    "目前，单位共有2个院区、总建筑面积53万平方米，在职职工4000余名、两院院士5人、临床和医技场地53个、国家级重点学科20个、国家临床重点专科29个、博士点16个、硕士点29个、国家级继续医学教育基地6个、二级学科住院医师培养基地18个、三级学科专科医师培养基地15个。开放住院床位2000余张，单日最高门诊量约1.5万人次、年出院病人约8万余人次。被评为“全国文明单位”、“全国创先争优先进基层党组织”、“全国卫生系统先进集体”、“首都卫生系统文明单位”、“最受欢迎三甲单位”，荣获全国五一劳动奖章。同时，单位还承担着支援老少边穷地区、国家重要活动和突发事件主力医疗队的重任，在2008年北京奥运工作中荣获“特别贡献奖”。\n" +
                     "\n" +
-                    "90多年来，协和人以执着的医志、高尚的医德、精湛的医术和严谨的学风书写了辉煌的历史，今天的协和人正为打造“国际知名、国内一流”医院的目标而继续努力。";
+                    "90多年来，协和人以执着的医志、高尚的医德、精湛的医术和严谨的学风书写了辉煌的历史，今天的协和人正为打造“国际知名、国内一流”单位的目标而继续努力。";
             paramMap.put("intro",intro);
             String route = "\n" +
                     "东院区乘车路线：106、108、110、111、116、684、685路到东单路口北；41、104快、814路到东单路口南；1、52、802路到东单路口西；20、25、37、39路到东单路口东；103、104、420、803路到新东安市场；地铁1、5号线到东单。\n" +

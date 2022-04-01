@@ -34,7 +34,7 @@ public class OrderApiController {
     //生成订单信息
     @ApiOperation(value = "创建订单")
     @PostMapping("/auth/submitOrder/{scheduleId}/{name}/{phone}/{sex}")
-    public Result submitOrder(@ApiParam(name = "scheduleId", value = "排班ID", required = true)
+    public Result submitOrder(@ApiParam(name = "scheduleId", value = "排期ID", required = true)
                                   @PathVariable String scheduleId,
                               @ApiParam(name = "name", value = "联系人", required = true) @PathVariable String name,
                               @ApiParam(name = "phone", value = "联系邮箱", required = true) @PathVariable String phone,

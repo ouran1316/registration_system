@@ -1,5 +1,8 @@
 server:
   port: 9998
+  servlet:
+    session:
+      timeout: 60
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

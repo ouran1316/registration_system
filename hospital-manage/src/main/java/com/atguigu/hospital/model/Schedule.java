@@ -23,11 +23,11 @@ public class Schedule extends BaseNoAutoEntity {
 	
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@TableField("hoscode")
 	private String hoscode;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	@TableField("depcode")
 	private String depcode;
 
@@ -63,7 +63,7 @@ public class Schedule extends BaseNoAutoEntity {
 	@TableField("amount")
 	private String amount;
 
-	@ApiModelProperty(value = "排班状态（-1：停诊 0：停约 1：可约）")
+	@ApiModelProperty(value = "排期状态（-1：停诊 0：停约 1：可约）")
 	@TableField("status")
 	private Integer status;
 }

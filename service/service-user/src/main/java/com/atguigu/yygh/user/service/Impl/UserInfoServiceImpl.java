@@ -4,9 +4,11 @@ import com.alibaba.excel.util.StringUtils;
 import com.atguigu.yygh.common.exception.HospitalException;
 import com.atguigu.yygh.common.helper.JwtHelper;
 import com.atguigu.yygh.common.result.ResultCodeEnum;
+import com.atguigu.yygh.common.utils.MD5;
 import com.atguigu.yygh.enums.AuthStatusEnum;
 import com.atguigu.yygh.model.user.Patient;
 import com.atguigu.yygh.model.user.UserInfo;
+import com.atguigu.yygh.model.user.UserInfoVo;
 import com.atguigu.yygh.user.mapper.UserInfoMapper;
 import com.atguigu.yygh.user.service.PatientService;
 import com.atguigu.yygh.user.service.UserInfoService;
@@ -18,6 +20,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -53,29 +57,45 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public Map<String, Object> loginUser(LoginVo loginVo) {
 
-        //从loginVo获取输入的手机号，和验证码
+        //从loginVo获取输入的手机号，和验证码，密码
         String phone = loginVo.getPhone();
         String code = loginVo.getCode();
+        String password = loginVo.getPassword();
 
         //判断手机号和验证码是否为空
-        if(StringUtils.isEmpty(phone) || StringUtils.isEmpty(code)) {
+        if(StringUtils.isEmpty(phone) || (StringUtils.isEmpty(code) && StringUtils.isEmpty(password))) {
             throw new HospitalException(ResultCodeEnum.PARAM_ERROR);
         }
 
-        //判断手机验证码和输入的验证码是否一致
-        //注：redis 里存的是 邮箱验证码 本次直接使用页面验证码吧，不用手机验证码了
-        String redisCode = redisTemplate.opsForValue().get(phone);
-        if(!code.equals(redisCode)) {
-            //TODO 假如登陆限流
-            //限流处理
-            if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
-                throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);
-            }
-            throw new HospitalException(ResultCodeEnum.CODE_ERROR);
+        UserInfo userInfo = baseMapper.selectOne(new QueryWrapper<UserInfo>().eq("phone", phone));
+        if (userInfo == null) {
+            // 账号不存在
+            throw new HospitalException(ResultCodeEnum.USERID_ERROR);
         }
 
+        if (!StringUtils.isEmpty(password)) {
+            // 密码登陆
+            if (!userInfo.getPassword().equals(MD5.encrypt(password))) {
+                throw new HospitalException(ResultCodeEnum.LOGIN_MOBLE_ERROR);
+            }
+        } else {
+            //判断手机验证码和输入的验证码是否一致
+            //注：redis 里存的是 邮箱验证码 本次直接使用页面验证码吧，不用手机验证码了
+            String redisCode = redisTemplate.opsForValue().get(phone);
+            if(!code.equals(redisCode)) {
+                //TODO 假如登陆限流
+                //限流处理
+                if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
+                    throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);
+                }
+                throw new HospitalException(ResultCodeEnum.CODE_ERROR);
+            }
+            redisTemplate.delete(phone);
+        }
+
+
+
         //绑定手机号码
-        UserInfo userInfo = null;
         if(!StringUtils.isEmpty(loginVo.getOpenid())) {
 //            userInfo = this.selectWxInfoOpenId(loginVo.getOpenid());
 //            if(null != userInfo) {
@@ -89,15 +109,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //如果userinfo为空，进行正常手机登录
         if(userInfo == null) {
             //判断是否第一次登录：根据手机号查询数据库，如果不存在相同手机号就是第一次登录
-            userInfo = baseMapper.selectOne(new QueryWrapper<UserInfo>()
-                    .eq("phone", phone));
-            if (userInfo == null) { //第一次使用这个手机号登陆
+            if (userInfo == null) {
+//                throw new HospitalException(ResultCodeEnum.USERID_ERROR);
+                //第一次使用这个手机号登陆,将注册 22/3/12功能下线
                 //添加信息到数据库
-                userInfo = new UserInfo();
-                userInfo.setName(phone);
-                userInfo.setPhone(phone);
-                userInfo.setStatus(1);
-                baseMapper.insert(userInfo);
+//                userInfo = new UserInfo();
+//                userInfo.setName(phone);
+//                userInfo.setPhone(phone);
+//                userInfo.setStatus(1);
+//                baseMapper.insert(userInfo);
             }
         }
 
@@ -124,6 +144,94 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         map.put("token", token);
 
         return map;
+    }
+
+    @Override
+    public Map<String, Object> registerUser(LoginVo loginVo) {
+        Map<String, Object> map = new HashMap<>();
+
+        String phone = loginVo.getPhone();
+        String code = loginVo.getCode();
+        String name = loginVo.getName();
+        String password = loginVo.getPassword();
+
+        if(StringUtils.isEmpty(phone) || StringUtils.isEmpty(code)
+                || StringUtils.isEmpty(name) || StringUtils.isEmpty(password)) {
+            throw new HospitalException(ResultCodeEnum.PARAM_ERROR);
+        }
+
+        //判断手机验证码和输入的验证码是否一致
+        //注：redis 里存的是 邮箱验证码 本次直接使用页面验证码吧，不用手机验证码了
+        String redisCode = redisTemplate.opsForValue().get(phone);
+        redisTemplate.delete(phone);
+        if(!code.equals(redisCode)) {
+            if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
+                throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);
+            }
+            throw new HospitalException(ResultCodeEnum.CODE_ERROR);
+        }
+
+        // 校验注册账户是否存在
+        UserInfo userInfo = baseMapper.selectOne(new QueryWrapper<UserInfo>()
+                .eq("phone", phone));
+
+        if(userInfo == null) {
+            userInfo = new UserInfo();
+            userInfo.setName(name);
+            userInfo.setNickName(name);
+            userInfo.setPhone(phone);
+            userInfo.setPassword(MD5.encrypt(password));
+            userInfo.setStatus(1);
+            baseMapper.insert(userInfo);
+        } else {
+            throw new HospitalException(ResultCodeEnum.USER_EXIST);
+        }
+
+        map.put("name", name);
+        //jwt token 生成
+        String token = JwtHelper.createToken(userInfo.getId(), name);
+        map.put("token", token);
+
+        return map;
+    }
+
+    @Override
+    public Map<String, Object> saveUserInfo(UserInfoVo userInfoVo, String code, Long userId) {
+        // 预校验
+        String phone = userInfoVo.getPhone();
+        String name = userInfoVo.getName();
+        String password = userInfoVo.getPassword();
+
+        if(StringUtils.isEmpty(phone) || StringUtils.isEmpty(code)
+                || StringUtils.isEmpty(name) || StringUtils.isEmpty(password)) {
+            throw new HospitalException(ResultCodeEnum.PARAM_ERROR);
+        }
+
+        UserInfo userInfo = new UserInfo();
+        BeanUtils.copyProperties(userInfoVo, userInfo);
+        userInfo.setPassword(MD5.encrypt(userInfo.getPassword()));
+        userInfo.setId(userId);
+
+        String checkCode = redisTemplate.opsForValue().get(userInfo.getPhone());
+        if (!code.equals(checkCode)) {
+            // 限流处理，一段时间内只能请求 maxCount 次
+            if (!slidingWindowCounter.canAccess(phone, windowInSecond, maxCount)) {
+                throw new HospitalException(ResultCodeEnum.LOGIN_LIMIT);
+            }
+            throw new HospitalException(ResultCodeEnum.CODE_ERROR);
+        }
+        try {
+            baseMapper.updateById(userInfo);
+        } catch (Exception e) {
+            log.error("com.atguigu.yygh.user.service.Impl.UserInfoServiceImpl#saveUserInfo#updateById error：", e);
+            throw new HospitalException(ResultCodeEnum.SERVICE_ERROR);
+        }
+        // 更新 token
+        Map<String, Object> param = Maps.newHashMap();
+        String token = JwtHelper.createToken(userInfo.getId(), name);
+        param.put("token", token);
+        param.put("name", name);
+        return param;
     }
 
 //    //用户手机号登陆接口2，用于测试限流算法的效果
@@ -184,6 +292,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         String createTimeEnd = userInfoQueryVo.getCreateTimeEnd(); //结束时间
         Page<UserInfo> pages = baseMapper.selectPage(pageParam, new QueryWrapper<UserInfo>()
                 .like(!StringUtils.isEmpty(name), "name", name)
+                .or()
+                .like(!StringUtils.isEmpty(name), "phone", name)
                 .eq(!StringUtils.isEmpty(status), "status", status)
                 .eq(!StringUtils.isEmpty(authStatus), "auth_status", authStatus)
                 .ge(!StringUtils.isEmpty(createTimeBegin), "create_time", createTimeBegin)

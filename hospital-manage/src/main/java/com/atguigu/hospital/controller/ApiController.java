@@ -1,20 +1,22 @@
 package com.atguigu.hospital.controller;
 
 import com.atguigu.hospital.mapper.HospitalSetMapper;
+import com.atguigu.hospital.mapper.UserMapper;
 import com.atguigu.hospital.model.HospitalSet;
 import com.atguigu.hospital.service.ApiService;
+import com.atguigu.hospital.service.HospitalSetService;
+import com.atguigu.hospital.util.CommonHolder;
+import com.atguigu.hospital.util.ResultCodeEnum;
 import com.atguigu.hospital.util.YyghException;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -22,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
  * @author qy
  *
  */
-@Api(tags = "医院管理接口")
+@Api(tags = "单位管理接口")
 @Controller
 @RequestMapping
 public class ApiController extends BaseController {
@@ -33,25 +35,41 @@ public class ApiController extends BaseController {
 	@Autowired
 	private HospitalSetMapper hospitalSetMapper;
 
+	@Autowired
+	HospitalSetService hospitalSetService;
+
+	@Resource
+	private UserMapper userMapper;
+
 	@RequestMapping("/hospitalSet/index")
-	public String getHospitalSet(ModelMap model,RedirectAttributes redirectAttributes) {
-		HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
+	public String getHospitalSet(ModelMap model, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+//		String user_name = (String) request.getSession().getAttribute("user_name");
+//		if (io.micrometer.core.instrument.util.StringUtils.isBlank(user_name)) {
+//			throw new YyghException(ResultCodeEnum.USER_NOT_LOGGER);
+//		}
+		// todo 这里根据user_name查询
+		HospitalSet hospitalSet = hospitalSetService.getHospitalSet();
 		model.addAttribute("hospitalSet", hospitalSet);
 		return "hospitalSet/index";
 	}
 
 	@RequestMapping(value="/hospitalSet/save")
-	public String createHospitalSet(ModelMap model,HospitalSet hospitalSet) {
-		hospitalSetMapper.updateById(hospitalSet);
+	public String createHospitalSet(ModelMap model, HospitalSet hospitalSet) {
+		try {
+			hospitalSetService.updateHospitalSet(hospitalSet);
+		} catch (Exception e) {
+
+		}
 		return "redirect:/hospitalSet/index";
 	}
 
 	@RequestMapping("/hospital/index")
-	public String getHospital(ModelMap model,HttpServletRequest request,RedirectAttributes redirectAttributes) {
+	public String getHospital(ModelMap model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
 		try {
-			HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
-			if(null == hospitalSet || StringUtils.isEmpty(hospitalSet.getHoscode()) || StringUtils.isEmpty(hospitalSet.getSignKey())) {
-				this.failureMessage("先设置医院code与签名key", redirectAttributes);
+			HospitalSet hospitalSet = hospitalSetService.getHospitalSet();
+			if(null == hospitalSet || StringUtils.isEmpty(hospitalSet.getHoscode())
+					|| StringUtils.isEmpty(hospitalSet.getSignKey())) {
+				this.failureMessage("先设置单位code与签名key", redirectAttributes);
 				return "redirect:/hospitalSet/index";
 			}
 
@@ -89,7 +107,7 @@ public class ApiController extends BaseController {
 		try {
 			HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
 			if(null == hospitalSet || StringUtils.isEmpty(hospitalSet.getHoscode()) || StringUtils.isEmpty(hospitalSet.getSignKey())) {
-				this.failureMessage("先设置医院code与签名key", redirectAttributes);
+				this.failureMessage("先设置单位code与签名key", redirectAttributes);
 				return "redirect:/hospitalSet/index";
 			}
 
@@ -127,7 +145,7 @@ public class ApiController extends BaseController {
 		try {
 			HospitalSet hospitalSet = hospitalSetMapper.selectById(1);
 			if(null == hospitalSet || StringUtils.isEmpty(hospitalSet.getHoscode()) || StringUtils.isEmpty(hospitalSet.getSignKey())) {
-				this.failureMessage("先设置医院code与签名key", redirectAttributes);
+				this.failureMessage("先设置单位code与签名key", redirectAttributes);
 				return "redirect:/hospitalSet/index";
 			}
 
@@ -143,6 +161,46 @@ public class ApiController extends BaseController {
 	@RequestMapping(value="/schedule/create")
 	public String createSchedule(ModelMap model) {
 		return "schedule/create";
+	}
+
+	/**
+	 * 转发更新排期页面
+	 * @param model
+	 * @return
+	 */
+	@RequestMapping(value = "/schedule/update/{scheduleId}/{index}/{reservedNumber}/{amount}/{skill}")
+	public String updateSchedulePage(ModelMap model, @PathVariable String scheduleId, @PathVariable String index,
+								 @PathVariable String reservedNumber, @PathVariable String amount,
+								 @PathVariable String skill) {
+		model.addAttribute("scheduleId", scheduleId);
+		model.addAttribute("index", Integer.parseInt(index) + 1);
+		model.addAttribute("reservedNumber", reservedNumber);
+		model.addAttribute("amount", amount);
+		model.addAttribute("skill", skill);
+		return "schedule/update";
+	}
+
+	/**
+	 * 更新单个排期
+	 * @param scheduleId
+	 * @param reservedNumber
+	 * @param amount
+	 * @param skill
+	 * @param request
+	 * @return
+	 */
+	@PostMapping(value = "/updateSchedule/save")
+	public String updateSchedule(String scheduleId, String reservedNumber, String amount, String skill,
+								 HttpServletRequest request) {
+		try {
+			apiService.updateSchedule(scheduleId, reservedNumber, amount, skill);
+		} catch (Exception e) {
+			if (e instanceof YyghException) {
+				return this.failurePage(e.getMessage(), request);
+			}
+			return this.failurePage("系统错误", request);
+		}
+		return this.successPage(null, request);
 	}
 
 	@RequestMapping(value="/schedule/save",method=RequestMethod.POST)

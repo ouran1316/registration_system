@@ -38,4 +38,23 @@ public class AdministratorsServiceImpl extends ServiceImpl<AdministratorsMapper,
         }
         return true;
     }
+
+    @Override
+    public String getHoscodeByAdminName(String userName) {
+        if (StringUtils.isEmpty(userName)) {
+            throw new HospitalException(ResultCodeEnum.LOGIN_AUTH);
+        }
+        AdministratorsInfo administratorsInfo = null;
+        try {
+            administratorsInfo =
+                    baseMapper.selectOne(new QueryWrapper<AdministratorsInfo>().eq("user_name", userName));
+        } catch (Exception e) {
+            log.error("AdministratorsServiceImpl login error", e);
+            throw new HospitalException(ResultCodeEnum.SERVICE_ERROR);
+        }
+        if (administratorsInfo == null || administratorsInfo.getHoscode() == null) {
+            return null;
+        }
+        return administratorsInfo.getHoscode();
+    }
 }

@@ -10,10 +10,10 @@ import java.util.Date;
 @ApiModel(description = "Schedule")
 public class ScheduleQueryVo {
 	
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	private String hoscode;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	private String depcode;
 
 	@ApiModelProperty(value = "医生编号")

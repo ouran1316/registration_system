@@ -16,4 +16,11 @@ public interface AdministratorsService extends IService<AdministratorsInfo> {
      * @param password
      */
     Boolean login(String userName, String password);
+
+    /**
+     * 获取管理员 hoscode
+     * @param userName
+     * @return
+     */
+    String getHoscodeByAdminName(String userName);
 }

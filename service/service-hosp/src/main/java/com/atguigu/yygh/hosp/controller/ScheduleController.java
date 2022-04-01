@@ -22,8 +22,8 @@ public class ScheduleController {
     @Autowired
     ScheduleService scheduleService;
 
-    //根据医院编号和科室编号，查询排班规则数据
-    @ApiOperation(value = "查询排班规则数据")
+    // Dashboard 根据单位编号和场地编号，查询排期规则数据
+    @ApiOperation(value = "查询排期规则数据")
     @GetMapping("/getScheduleRule/{page}/{limit}/{hoscode}/{depcode}")
     public Result getScheduleRule(@PathVariable long page,
                                   @PathVariable long limit,
@@ -33,8 +33,8 @@ public class ScheduleController {
         return Result.ok(map);
     }
 
-    //根据医院编号 、科室编号和工作日期，查询排班详细信息
-    @ApiOperation(value = "查询排班详细信息")
+    //根据单位编号 、场地编号和工作日期，查询排期详细信息
+    @ApiOperation(value = "查询排期详细信息")
     @GetMapping("getScheduleDetail/{hoscode}/{depcode}/{workDate}")
     public Result getScheduleDetail( @PathVariable String hoscode,
                                      @PathVariable String depcode,

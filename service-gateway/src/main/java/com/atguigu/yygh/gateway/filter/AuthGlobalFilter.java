@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.atguigu.yygh.common.helper.JwtHelper;
 import com.atguigu.yygh.common.result.Result;
 import com.atguigu.yygh.common.result.ResultCodeEnum;
+import com.atguigu.yygh.user.client.PatientFeignClient;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -16,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -28,9 +31,13 @@ import java.util.List;
  * @since 2019-11-21
  */
 @Component
+@Slf4j
 public class AuthGlobalFilter implements GlobalFilter, Ordered {
 
     private AntPathMatcher antPathMatcher = new AntPathMatcher();
+
+//    @Resource
+//    private PatientFeignClient patientFeignClient;
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -44,11 +51,9 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
             return out(response, ResultCodeEnum.PERMISSION);
         }
 
-
         //api接口，异步请求，校验用户必须登录
         if(antPathMatcher.match("/api/**/auth/**", path)) {
             Long userId = this.getUserId(request);
-            // 不用登陆也能进入系统
             if(StringUtils.isEmpty(userId)) {
                 ServerHttpResponse response = exchange.getResponse();
                 return out(response, ResultCodeEnum.LOGIN_AUTH);
@@ -84,7 +89,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     private Long getUserId(ServerHttpRequest request) {
         String token = "";
         List<String> tokenList = request.getHeaders().get("token");
-        if(null  != tokenList) {
+        if(null != tokenList) {
             token = tokenList.get(0);
         }
         if(!StringUtils.isEmpty(token)) {

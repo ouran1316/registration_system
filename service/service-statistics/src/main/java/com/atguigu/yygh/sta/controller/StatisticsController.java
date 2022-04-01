@@ -28,7 +28,8 @@ public class StatisticsController {
 
     @ApiOperation(value = "获取订单统计数据")
     @GetMapping("/getCountMap")
-    public Result getCountMap(@ApiParam(name = "orderCountQueryVo", value = "查询对象", required = false) OrderCountQueryVo orderCountQueryVo) {
+    public Result getCountMap(@ApiParam(name = "orderCountQueryVo", value = "查询对象", required = false)
+                                          OrderCountQueryVo orderCountQueryVo) {
         return Result.ok(orderFeignClient.getCountMap(orderCountQueryVo));
     }
 }

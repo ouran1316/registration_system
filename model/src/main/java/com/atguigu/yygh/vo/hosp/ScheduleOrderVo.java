@@ -11,19 +11,19 @@ import java.util.Date;
 @ApiModel(description = "Schedule")
 public class ScheduleOrderVo {
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	private String hoscode;
 
-	@ApiModelProperty(value = "医院名称")
+	@ApiModelProperty(value = "单位名称")
 	private String hosname;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	private String depcode;
 
-	@ApiModelProperty(value = "科室名称")
+	@ApiModelProperty(value = "场地名称")
 	private String depname;
 
-	@ApiModelProperty(value = "排班编号（医院自己的排班主键）")
+	@ApiModelProperty(value = "排期编号（单位自己的排期主键）")
 	private String hosScheduleId;
 
 	@ApiModelProperty(value = "医生职称")

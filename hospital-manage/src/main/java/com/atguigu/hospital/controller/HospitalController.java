@@ -17,7 +17,7 @@ import java.util.Map;
  * @author qy
  *
  */
-@Api(tags = "医院管理接口")
+@Api(tags = "单位管理接口")
 @RestController
 public class HospitalController {
 
@@ -36,6 +36,8 @@ public class HospitalController {
 	public Result AgreeAccountLendProject(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			Map<String, Object> paramMap = HttpRequestHelper.switchMap(request.getParameterMap());
+			String hoscode = (String) paramMap.get("hoscode");
+			CommonHolder.setHoscode(hoscode);
 			if(!HttpRequestHelper.isSignEquals(paramMap, apiService.getSignKey())) {
 				throw new YyghException(ResultCodeEnum.SIGN_ERROR);
 			}
@@ -56,10 +58,11 @@ public class HospitalController {
 	public Result updatePayStatus(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			Map<String, Object> paramMap = HttpRequestHelper.switchMap(request.getParameterMap());
+			String hoscode = (String) paramMap.get("hoscode");
+			CommonHolder.setHoscode(hoscode);
 			if(!HttpRequestHelper.isSignEquals(paramMap, apiService.getSignKey())) {
 				throw new YyghException(ResultCodeEnum.SIGN_ERROR);
 			}
-
 			hospitalService.updatePayStatus(paramMap);
 			return Result.ok();
 		} catch (YyghException e) {
@@ -76,10 +79,11 @@ public class HospitalController {
 	public Result updateCancelStatus(HttpServletRequest request, HttpServletResponse response) {
 		try {
 			Map<String, Object> paramMap = HttpRequestHelper.switchMap(request.getParameterMap());
+			String hoscode = (String) paramMap.get("hoscode");
+			CommonHolder.setHoscode(hoscode);
 			if(!HttpRequestHelper.isSignEquals(paramMap, apiService.getSignKey())) {
 				throw new YyghException(ResultCodeEnum.SIGN_ERROR);
 			}
-
 			hospitalService.updateCancelStatus(paramMap);
 			return Result.ok();
 		} catch (YyghException e) {

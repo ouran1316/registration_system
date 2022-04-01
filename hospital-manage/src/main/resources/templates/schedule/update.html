@@ -8,29 +8,36 @@
         <div class="col-sm-12">
             <div class="ibox float-e-margins">
                 <div class="ibox-content">
-                    <form id="ec" th:action="@{/hospitalSet/save}" method="post" class="form-horizontal">
-                        <input type="hidden" name="id" value="1">
+                    <form id="ec" th:action="@{/updateSchedule/save}" method="post" class="form-horizontal">
+                        <input type="hidden" name="scheduleId" id="scheduleId" th:value="${scheduleId}">
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">单位code：</label>
+                            <label class="col-sm-2 control-label">序号：</label>
+                            <div class="col-sm-10">
+                                <input type="text" disabled="disabled" name="index" id="index" th:value="${index}" class="form-control"/>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="col-sm-2 control-label">预约数：</label>
 
                             <div class="col-sm-10">
-                                <input type="text" name="hoscode" id="hoscode" th:value="${hospitalSet.hoscode}" class="form-control"/>
+                                <input type="text" name="reservedNumber" id="reservedNumber" th:value="${reservedNumber}" class="form-control"/>
                             </div>
                         </div>
                         <div class="hr-line-dashed"></div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">签名key：</label>
+                            <label class="col-sm-2 control-label">价格：</label>
 
                             <div class="col-sm-10">
-                                <input type="text" name="signKey" id="signKey" th:value="${hospitalSet.signKey}" class="form-control"/>
+                                <input type="text" name="amount" id="amount" th:value="${amount}" class="form-control"/>
                             </div>
                         </div>
                         <div class="hr-line-dashed"></div>
                         <div class="form-group">
-                            <label class="col-sm-2 control-label">统一预约挂号平台基础路径：</label>
+                            <label class="col-sm-2 control-label">时间段：</label>
 
                             <div class="col-sm-10">
-                                <input type="text" name="apiUrl" id="apiUrl" th:value="${hospitalSet.apiUrl}" class="form-control"/>
+                                <input type="text" name="skill" id="skill" th:value="${skill}" class="form-control"/>
                             </div>
                         </div>
                         <div class="hr-line-dashed"></div>
@@ -48,17 +55,29 @@
 </body>
 </html>
 <script type="text/javascript">
+
+var app = new Vue({
+    data() {
+        return {
+            scheduleId: [[${scheduleId}]],
+            reservedNumber: [[${reservedNumber}]],
+            amount: [[${amount}]],
+            skill: [[${skill}]]
+        }
+    },
+
+})
+
     $(function(){
         $('#ec').validate({
             rules:{
-                hoscode:"required",
-                signKey:"required",
-                apiUrl:"required",
+                name:"required",
+                reservedNumber:"required",
+                amount:"required",
+                skill:"required"
             },
             messages:{
-                hoscode:"必须输入",
-                signKey:"必须输入",
-                apiUrl:"必须输入"
+                name:"必须输入"
             },
             submitHandler: function(form) {
                 opt.load();

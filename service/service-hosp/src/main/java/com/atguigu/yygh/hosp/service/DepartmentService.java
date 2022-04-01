@@ -13,21 +13,21 @@ import java.util.Map;
  * @Date 2021/5/22 14:51
  */
 public interface DepartmentService {
-    //上传科室接口
+    //上传场地接口
     void save(Map<String, Object> paramMap);
 
-    //查询科室接口
+    //查询场地接口
     Page<Department> findPageDepartment(int page, int limit, Department department);
 
-    //删除科室接口
+    //删除场地接口
     void remove(String hoscode, String depcode);
 
-    //根据医院编号，查询医院所有科室列表
+    //根据单位编号，查询单位所有场地列表
     List<DepartmentVo> findDeptTree(String hoscode);
 
-    //根据医院编号和科室编号查询科室名称
+    //根据单位编号和场地编号查询场地名称
     String getDepName(String hoscode, String depcode);
 
-    //根据医院编号和科室编号查询科室
+    //根据单位编号和场地编号查询场地
     Department getDepartment(String hoscode, String depcode);
 }

@@ -23,7 +23,7 @@ public class OrderInfo extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@ApiModelProperty(value = "排班id")
+	@ApiModelProperty(value = "排期id")
 	@TableField("schedule_id")
 	private Long scheduleId;
 

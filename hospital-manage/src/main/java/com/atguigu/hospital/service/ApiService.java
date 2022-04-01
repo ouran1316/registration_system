@@ -7,8 +7,6 @@ import java.util.Map;
 
 public interface ApiService {
 
-    String getHoscode();
-
     String getSignKey();
 
     String getApiUrl();
@@ -26,6 +24,16 @@ public interface ApiService {
     Map<String, Object> findSchedule(int pageNum, int pageSize);
 
     boolean saveSchedule(String data);
+
+    /**
+     * 更新单个排期
+     * @param scheduleId
+     * @param reversedNumber
+     * @param amount
+     * @param skill
+     * @return
+     */
+    Boolean updateSchedule(String scheduleId, String reversedNumber, String amount, String skill);
 
     boolean removeSchedule(String hosScheduleId);
 

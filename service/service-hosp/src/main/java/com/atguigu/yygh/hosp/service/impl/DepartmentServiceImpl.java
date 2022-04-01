@@ -25,21 +25,22 @@ public class DepartmentServiceImpl implements DepartmentService {
     @Autowired
     private DepartmentRepository departmentRepository;
 
-    //上传科室接口
+    //上传场地接口
     @Override
     public void save(Map<String, Object> paramMap) {
         //paramMap 转换department对象
         String paramMapString = JSONObject.toJSONString(paramMap);
         Department department = JSONObject.parseObject(paramMapString,Department.class);
 
-        //根据医院编号 和 科室编号查询
+        //根据单位编号 和 场地编号查询
         Department departmentExist = departmentRepository.
                 getDepartmentByHoscodeAndDepcode(department.getHoscode(),department.getDepcode());
         //判断是否已存在
-        if(departmentExist!=null) {
-            departmentExist.setUpdateTime(new Date());
-            departmentExist.setIsDeleted(0);
-            departmentRepository.save(departmentExist);
+        if(departmentExist != null) {
+            department.setUpdateTime(new Date());
+            department.setCreateTime(departmentExist.getCreateTime());
+            department.setIsDeleted(departmentExist.getIsDeleted());
+            departmentRepository.save(department);
         } else {
             department.setCreateTime(new Date());
             department.setUpdateTime(new Date());
@@ -48,7 +49,7 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
     }
 
-    //查询科室接口
+    //查询场地接口
     @Override
     public Page<Department> findPageDepartment(int page, int limit, Department department) {
         // 创建Pageable对象，设置当前页和每页记录数
@@ -65,10 +66,10 @@ public class DepartmentServiceImpl implements DepartmentService {
         return all;
     }
 
-    //删除科室接口
+    //删除场地接口
     @Override
     public void remove(String hoscode, String depcode) {
-        //根据医院编号 和 科室编号查询
+        //根据单位编号 和 场地编号查询
         //感觉这两步可以合成一步吧
         Department department = departmentRepository.getDepartmentByHoscodeAndDepcode(hoscode, depcode);
         if (department != null) {
@@ -76,34 +77,34 @@ public class DepartmentServiceImpl implements DepartmentService {
         }
     }
 
-    //根据医院编号，查询医院所有科室列表
+    //根据单位编号，查询单位所有场地列表
     @Override
     public List<DepartmentVo> findDeptTree(String hoscode) {
         //创建list集合，用于最终数据封装
         List<DepartmentVo> result = new ArrayList<>();
 
-        //根据医院编号，查询医院所有科室信息
+        //根据单位编号，查询单位所有场地信息
         Department departmentQuery = new Department();
         departmentQuery.setHoscode(hoscode);
         Example example = Example.of(departmentQuery);
-        //所有科室列表 departmentList
+        //所有场地列表 departmentList
         List<Department> departmentList = departmentRepository.findAll(example);
 
-        //根据大科室编号  bigcode 分组，获取每个大科室里面下级子科室
+        //根据大场地编号  bigcode 分组，获取每个大场地里面下级子场地
         Map<String, List<Department>> departmentMap =
                 departmentList.stream().collect(Collectors.groupingBy(Department::getBigcode));
 
         for(Map.Entry<String,List<Department>> entry : departmentMap.entrySet()) {
-            //大科室编号
+            //大场地编号
             String bigcode = entry.getKey();
-            //大科室编号对应的全局数据
+            //大场地编号对应的全局数据
             List<Department> deparment1List = entry.getValue();
-            //封装大科室
+            //封装大场地
             DepartmentVo departmentVo1 = new DepartmentVo();
             departmentVo1.setDepcode(bigcode);
             departmentVo1.setDepname(deparment1List.get(0).getBigname());
 
-            //封装小科室
+            //封装小场地
             List<DepartmentVo> children = new ArrayList<>();
             for(Department department: deparment1List) {
                 DepartmentVo departmentVo2 =  new DepartmentVo();
@@ -112,7 +113,7 @@ public class DepartmentServiceImpl implements DepartmentService {
                 //封装到list集合
                 children.add(departmentVo2);
             }
-            //把小科室list集合放到大科室children里面
+            //把小场地list集合放到大场地children里面
             departmentVo1.setChildren(children);
             //放到最终result里面
             result.add(departmentVo1);
@@ -121,14 +122,14 @@ public class DepartmentServiceImpl implements DepartmentService {
         return result;
     }
 
-    //根据医院编号和科室编号查询科室名称
+    //根据单位编号和场地编号查询场地名称
     @Override
     public String getDepName(String hoscode, String depcode) {
         Department department = departmentRepository.getDepartmentByHoscodeAndDepcode(hoscode, depcode);
         return department != null ? department.getDepname() : null;
     }
 
-    //根据医院编号和科室编号查询科室
+    //根据单位编号和场地编号查询场地
     @Override
     public Department getDepartment(String hoscode, String depcode) {
         return departmentRepository.getDepartmentByHoscodeAndDepcode(hoscode, depcode);

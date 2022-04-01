@@ -6,6 +6,7 @@ import com.atguigu.yygh.msm.service.MsmService;
 import com.atguigu.yygh.msm.utils.RandomUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * @Version 1.0
  * @Date 2021/5/25 17:18
  */
+@Slf4j
 @Api
 @RestController
 @RequestMapping("/api/msm")
@@ -45,7 +47,13 @@ public class MsmApiController {
         // 生成验证码，
         code = RandomUtil.getSixBitRandom();
         //调用service方法，通过整合短信服务进行发送
-        boolean isSend = msmService.send(phone, code);
+        Boolean isSend = false;
+        try {
+            isSend = msmService.send(phone, code);
+        } catch (Exception e) {
+            log.error("MsmApiController sendCode msmService.send error" + e);
+        }
+
         //生成验证码放到redis里面，设置有效时间
         if(isSend) {
             redisTemplate.opsForValue().set(phone, code,2, TimeUnit.MINUTES);

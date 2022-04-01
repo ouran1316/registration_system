@@ -51,7 +51,7 @@ MsmServiceImpl implements MsmService {
 
         //邮件设置1：一个简单的邮件
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setSubject("尚医通预约挂号平台通知");
+        message.setSubject("场地预约平台通知");
         message.setText(code + " 时间：" + System.currentTimeMillis());
 
         message.setTo(email);
@@ -80,7 +80,7 @@ MsmServiceImpl implements MsmService {
         //邮件设置1：一个简单的邮件
         SimpleMailMessage message = new SimpleMailMessage();
         message.setSubject((String) param.get("title"));
-        message.setText(JSONObject.toJSONString((String) param.get("reserveDate")) + " 时间：" + System.currentTimeMillis());
+        message.setText(JSONObject.toJSONString(param.get("reserveDate")) + " 时间：" + System.currentTimeMillis());
 
         message.setTo(email);
         message.setFrom("1316049625@qq.com");

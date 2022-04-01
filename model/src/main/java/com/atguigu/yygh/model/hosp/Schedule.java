@@ -26,11 +26,11 @@ public class Schedule extends BaseMongoEntity implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@Indexed //普通索引
 	private String hoscode;
 
-	@ApiModelProperty(value = "科室编号")
+	@ApiModelProperty(value = "场地编号")
 	@Indexed //普通索引
 	private String depcode;
 
@@ -43,11 +43,11 @@ public class Schedule extends BaseMongoEntity implements Serializable {
 	@ApiModelProperty(value = "擅长技能")
 	private String skill;
 
-	@ApiModelProperty(value = "排班日期")
+	@ApiModelProperty(value = "排期日期")
 	@JsonFormat(pattern = "yyyy-MM-dd",timezone = "Asia/Shanghai")
 	private Date workDate;
 
-	@ApiModelProperty(value = "排班时间（0：上午 1：下午）")
+	@ApiModelProperty(value = "排期时间（0：上午 1：下午）")
 	private Integer workTime;
 
 	@ApiModelProperty(value = "可预约数")
@@ -59,10 +59,10 @@ public class Schedule extends BaseMongoEntity implements Serializable {
 	@ApiModelProperty(value = "挂号费")
 	private BigDecimal amount;
 
-	@ApiModelProperty(value = "排班状态（-1：停诊 0：停约 1：可约）")
+	@ApiModelProperty(value = "排期状态（-1：停诊 0：停约 1：可约）")
 	private Integer status;
 
-	@ApiModelProperty(value = "排班编号（医院自己的排班主键）")
+	@ApiModelProperty(value = "排期编号（单位自己的排期主键）")
 	@Indexed //普通索引
 	private String hosScheduleId;
 

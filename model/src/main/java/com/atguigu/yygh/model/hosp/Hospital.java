@@ -22,15 +22,15 @@ public class Hospital extends BaseMongoEntity {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@ApiModelProperty(value = "医院编号")
+	@ApiModelProperty(value = "单位编号")
 	@Indexed(unique = true) //唯一索引
 	private String hoscode;
 
-	@ApiModelProperty(value = "医院名称")
+	@ApiModelProperty(value = "单位名称")
 	@Indexed //普通索引
 	private String hosname;
 
-	@ApiModelProperty(value = "医院类型，如三级甲等")
+	@ApiModelProperty(value = "单位类型，如三级甲等")
 	private String hostype;
 
 	@ApiModelProperty(value = "省code")
@@ -45,10 +45,10 @@ public class Hospital extends BaseMongoEntity {
 	@ApiModelProperty(value = "详情地址")
 	private String address;
 
-	@ApiModelProperty(value = "医院logo")
+	@ApiModelProperty(value = "单位logo")
 	private String logoData;
 
-	@ApiModelProperty(value = "医院简介")
+	@ApiModelProperty(value = "单位简介")
 	private String intro;
 
 	@ApiModelProperty(value = "坐车路线")

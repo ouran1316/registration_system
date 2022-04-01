@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @Date 2021/5/15 20:13
  */
 
-@Api(tags = "医院设置管理")
+@Api(tags = "单位设置管理")
 @RestController
 @RequestMapping(value = "/admin/hosp/hospitalSet")
 //@CrossOrigin    //允许跨域请求
@@ -38,8 +38,8 @@ public class HospitalSetController {
     @Autowired
     HospitalSetService hospitalSetService;
 
-    //1 查询医院设置所有信息
-    @ApiOperation(value = "获取所有医院设置")
+    //1 查询单位设置所有信息
+    @ApiOperation(value = "获取所有单位设置")
     @GetMapping("/findAll")
     public Result findAllHospitalSet() {
         //调用 service
@@ -47,8 +47,8 @@ public class HospitalSetController {
         return Result.ok(list);
     }
 
-    //2 逻辑删除医院设置
-    @ApiOperation(value = "逻辑删除医院设置")
+    //2 逻辑删除单位设置
+    @ApiOperation(value = "逻辑删除单位设置")
     @DeleteMapping("/{id}")
     public Result removeHospSet(@PathVariable("id") Long id) {
         boolean b = hospitalSetService.removeById(id);
@@ -59,7 +59,7 @@ public class HospitalSetController {
     /**
      * @param current 页码
      * @param limit 每页大小
-     * @param hospitalSetQueryVo 医院名称和医院编号
+     * @param hospitalSetQueryVo 单位名称和单位编号
      * @return 分页结果
      */
     @PostMapping("/findPageHospSet/{current}/{limit}")
@@ -79,13 +79,14 @@ public class HospitalSetController {
         return Result.ok(hospitalSetPage);
     }
 
-    //4 添加医院设置
+    //4 添加单位设置
     @PostMapping("/saveHospitalSet")
     public Result saveHospitalSet(@RequestBody HospitalSet hospitalSet) {
         //设置状态 1 使用 0 不使用
         hospitalSet.setStatus(1);
         //签名密钥
-        hospitalSet.setSignKey(SecureUtil.md5(System.currentTimeMillis() + "" + new Random().nextInt(1000)));
+        hospitalSet.setSignKey(
+                SecureUtil.md5(System.currentTimeMillis() + "" + new Random().nextInt(1000)));
         //调用 service 保存
         if (hospitalSetService.save(hospitalSet)) {
             return Result.ok();
@@ -93,7 +94,7 @@ public class HospitalSetController {
         return Result.fail();
     }
 
-    //5 根据 id 获取医院配置
+    //5 根据 id 获取单位配置
     @GetMapping("/getHospSet/{id}")
     public Result getHospSetById(@PathVariable("id") long id) {
 //        try{
@@ -105,7 +106,7 @@ public class HospitalSetController {
         return Result.ok(hospitalSet);
     }
 
-    //6 修改医院设置
+    //6 修改单位设置
     @PostMapping("/updateHospitalSet")
     public Result updateHospitalSet(@RequestBody HospitalSet hospitalSet) {
         //省略好多对 hospitalSet 安全性判断
@@ -115,7 +116,7 @@ public class HospitalSetController {
         return Result.fail();
     }
 
-    //7 批量删除医院设置
+    //7 批量删除单位设置
     @DeleteMapping("/batchRemove")
     public Result batchRemoveHospitalSet(@RequestBody List<Long> ids) {
         //这里是逻辑删除
@@ -123,11 +124,11 @@ public class HospitalSetController {
         return Result.ok();
     }
 
-    //8 医院设置锁定和解锁
+    //8 单位设置锁定和解锁
     @PutMapping("lockHospitalSet/{id}/{status}")
     public Result lockHospitalSet(@PathVariable Long id,
                                   @PathVariable Integer status) {
-        //根据id查询医院设置信息
+        //根据id查询单位设置信息
         HospitalSet hospitalSet = hospitalSetService.getById(id);
         //设置状态
         hospitalSet.setStatus(status);
